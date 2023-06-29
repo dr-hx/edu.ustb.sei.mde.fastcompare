@@ -13,37 +13,42 @@ import edu.ustb.sei.mde.fastcompare.utils.DiffUtil;
 import edu.ustb.sei.mde.fastcompare.utils.ReferenceUtil;
 
 public interface DistanceFunction {
-    /**
-     * Return the distance between two EObjects. When the two objects should
-     * considered as completely
-     * different the implementation is expected to return Double.MAX_VALUE.
-     * 
-     * @param inProgress
-     *                   the comparison being processed right now. This might be
-     *                   used for the distance to
-     *                   retrieve other matches for instance.
-     * @param a
-     *                   first object.
-     * @param b
-     *                   second object.
-     * @return the distance between the two EObjects or Double.MAX_VALUE when the
-     *         objects are considered
-     *         too different to be the same.
-     */
-    double distance(Comparison inProgress, EObject a, EObject b);
+
+	/**
+	 * Return the distance between two EObjects. When the two objects should
+	 * considered as completely different the implementation is expected to 
+	 * return Double.MAX_VALUE.
+	 * @param inProgress
+	 * 			the comparison being processed right now. This might be
+     *          used for the distance to retrieve other matches for instance.
+	 * @param a
+	 * 			the first object
+	 * @param b
+	 * 			the second object
+	 * @param haveSameContainer
+	 * 			a hint that tells whether a and b have the same container.
+	 * 			It may be null, which means there is no hint.
+	 * @return the distance between the two EObjects or Double.MAX_VALUE when the
+     *         objects are considered too different to be the same.
+	 */
+    double distance(Comparison inProgress, EObject a, EObject b, Boolean haveSameContainer);
+
+	/**
+	 * Return the distance threshold of eObj
+	 * @param eObj
+	 * @return 
+	 * 		the threshold
+	 */
     double getThresholdAmount(EObject eObj);
 
     /**
      * Check that two objects are equals from the distance function point of view
-     * (distance should be 0)
-     * You should prefer this method when you just want to check objects are not
-     * equals enabling the
-     * distance to stop sooner.
+     * (distance should be 0). You should prefer this method when you just want 
+	 * to check objects are not equals enabling the distance to stop sooner.
      * 
      * @param inProgress
      *                   the comparison being processed right now. This might be
-     *                   used for the distance to
-     *                   retrieve other matches for instance.
+     *                   used for the distance to retrieve other matches for instance.
      * @param a
      *                   first object.
      * @param b
@@ -54,7 +59,28 @@ public interface DistanceFunction {
 
     MatcherConfigure getMatcherConfigure();
 
-    boolean haveSameContainer(Comparison inProgress, EObject a, EObject b);
+	/**
+	 * A helper function to compute whether a and b have the same container
+	 * by considering the hint same.
+	 * @param same
+	 * @param inProgress
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	default boolean computeHaveSameContainer(Boolean same, Comparison inProgress, EObject a, EObject b) {
+		if(same == null) return haveSameContainer(inProgress, a, b);
+		else return same;
+	}
+
+	/**
+	 * The function to compute whether a and b have the same container.
+	 * @param inProgress
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	boolean haveSameContainer(Comparison inProgress, EObject a, EObject b);
 
     static public boolean isReferencedByTheMatch(EObject eObj, Match match) {
 		return match != null

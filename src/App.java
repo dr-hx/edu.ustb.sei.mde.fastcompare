@@ -3,13 +3,19 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 import java.util.zip.CRC32;
 
+import org.eclipse.emf.compare.CompareFactory;
+import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.match.resource.StrategyResourceMatcher;
+import org.eclipse.emf.ecore.EcorePackage;
 
+import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
+import edu.ustb.sei.mde.fastcompare.match.EditionDistance;
 import edu.ustb.sei.mde.fastcompare.shash.Hash64;
 import edu.ustb.sei.mde.fastcompare.shash.SHashFunction;
 
 public class App {
     public static void main(String[] args) throws Exception {
+        // testHaveSameContainer();
     }
 
     // private static void testPopcnt() {
@@ -38,7 +44,34 @@ public class App {
     //     System.out.println("avg. fast  = "+sum2/1000000.0/repeat+" ms");
     // }
 
-    
+    // private static void testHaveSameContainer() {
+    //     MatcherConfigure matcherConfigure = new MatcherConfigure();
+    //     EditionDistance dist = new EditionDistance(matcherConfigure);
+    //     Comparison inProgress = CompareFactory.eINSTANCE.createComparison();
+    //     long start, end;
+    //     long sum1 = 0, sum2 = 0;
+
+    //     int repeat = 1000000;
+        
+    //     for(int i = 0; i< repeat; i++) {
+    //         start = System.nanoTime();
+    //         dist.haveSameContainer(inProgress, EcorePackage.Literals.ECLASS, EcorePackage.Literals.ECLASSIFIER);
+    //         end = System.nanoTime();
+    //         sum1 += (end - start);
+    //     }
+
+    //     for(int i =0; i<repeat; i++) {
+    //         start = System.nanoTime();
+    //         dist._haveSameContainer(inProgress, EcorePackage.Literals.ECLASS, EcorePackage.Literals.ECLASSIFIER);
+    //         end = System.nanoTime();
+    //         sum2 += (end - start);
+    //     }
+        
+
+
+    //     System.out.println("avg. caching = "+sum1/1000000.0/repeat+" ms");
+    //     System.out.println("avg. uncaching  = "+sum2/1000000.0/repeat + " ms");
+    // }
 
 	private static void testChecksum() throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("MD5");

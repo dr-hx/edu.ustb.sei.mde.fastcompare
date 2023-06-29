@@ -63,7 +63,7 @@ public class TestConfigures {
             EClass cl = classes.get(l);
             for(int r = l + 1; r < classes.size(); r ++) {
                 EClass cr = classes.get(r);
-                double distance = myDistance.distance(comparison, cl, cr);
+                double distance = myDistance.distance(comparison, cl, cr, null);
                 double eDistance = emfcDistance.distance(comparison, cl, cr);
 
                 if(distance != eDistance)

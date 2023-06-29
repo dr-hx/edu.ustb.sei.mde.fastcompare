@@ -44,6 +44,24 @@ public class MatcherConfigure {
 
     private Hasher elementHasher;
 
+    private boolean useIdentityHash = false;
+
+    public MatcherConfigure() {
+        this.defaultWeightTable = new EcoreWeightTable();
+        this.defaultFeatureSHasherTable = new SHasherTable();
+        this.adaptiveFeatureConfigure = new AdaptiveFeatureConfigure(defaultWeightTable, defaultFeatureSHasherTable);
+        this.uriComputer = new URIComputer();
+        this.distanceFunction = new EditionDistance(this);
+    }
+
+    public boolean isUseIdentityHash() {
+        return useIdentityHash;
+    }
+
+    public void setUseIdentityHash(boolean useIdentityHash) {
+        this.useIdentityHash = useIdentityHash;
+    }
+
     public Hasher getElementHasher() {
         return elementHasher;
     }
@@ -58,14 +76,6 @@ public class MatcherConfigure {
 
     public void setDistanceFunction(DistanceFunction distanceFunction) {
         this.distanceFunction = distanceFunction;
-    }
-
-    public MatcherConfigure() {
-        this.defaultWeightTable = new EcoreWeightTable();
-        this.defaultFeatureSHasherTable = new SHasherTable();
-        this.adaptiveFeatureConfigure = new AdaptiveFeatureConfigure(defaultWeightTable, defaultFeatureSHasherTable);
-        this.uriComputer = new URIComputer();
-        this.distanceFunction = new EditionDistance(this);
     }
 
     public EqualityHelperExtension getEqualityHelperExtension() {

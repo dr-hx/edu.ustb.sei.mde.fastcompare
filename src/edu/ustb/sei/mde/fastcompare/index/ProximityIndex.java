@@ -1,21 +1,30 @@
 package edu.ustb.sei.mde.fastcompare.index;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.SortedMap;
+import java.util.Map.Entry;
 import java.util.function.Function;
 
 import org.eclipse.emf.compare.Comparison;
+import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.compare.match.eobject.ScopeQuery;
 import org.eclipse.emf.ecore.EObject;
 
+import com.google.common.collect.Maps;
+
+import edu.ustb.sei.mde.fastcompare.config.ClassConfigure;
 import edu.ustb.sei.mde.fastcompare.config.Hasher;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
-import edu.ustb.sei.mde.fastcompare.match.DistanceFunction;
+import edu.ustb.sei.mde.fastcompare.match.CachingDistanceFunction;
+import edu.ustb.sei.mde.fastcompare.match.CachingDistanceFunctionEx;
 
 public class ProximityIndex implements ObjectIndex {
     final private ScopeQuery scope;
     final private MatcherConfigure matcherConfigure;
-	final DistanceFunction meter;
+	final CachingDistanceFunction meter;
 	final Hasher hasher;
 
     final ObjectFilterIndex left;
@@ -25,7 +34,13 @@ public class ProximityIndex implements ObjectIndex {
     public ProximityIndex(ScopeQuery scope, MatcherConfigure matcherConfigure, Function<MatcherConfigure, ObjectFilterIndex> creator) {
 		this.scope = scope;
 		this.matcherConfigure = matcherConfigure;
-		this.meter = matcherConfigure.getDistanceFunction();
+
+		if(matcherConfigure.isUseIdentityHash()) {
+			this.meter = new CachingDistanceFunctionEx(matcherConfigure.getDistanceFunction());
+		} else {
+			this.meter = new CachingDistanceFunction(matcherConfigure.getDistanceFunction());
+		}
+
 		this.hasher = matcherConfigure.getElementHasher();
 
         this.left = creator.apply(matcherConfigure);
@@ -43,10 +58,152 @@ public class ProximityIndex implements ObjectIndex {
 		}
 	}
 
+	protected boolean readyForThisTest(Comparison inProgress, EObject fastCheck) {
+		EObject eContainer = fastCheck.eContainer();
+		if (eContainer != null && scope.isInScope(eContainer)) {
+			return inProgress.getMatch(eContainer) != null;
+		}
+		return true;
+	}
+
 	@Override
-	public Map<Side, EObject> findClosests(Comparison inProgress, EObject eObj, Side side) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'findClosests'");
+	public Map<Side, EObject> findClosests(Comparison inProgress, EObject eObj, Side passedObjectSide) {
+		if (!readyForThisTest(inProgress, eObj)) {
+			return null;
+		}
+
+		Map<Side, EObject> result = new HashMap<Side, EObject>(3);
+		result.put(passedObjectSide, eObj);
+		if (passedObjectSide == Side.LEFT) {
+			EObject closestRight = findTheClosest(inProgress, eObj, Side.LEFT, Side.RIGHT, true);
+			EObject closestOrigin = findTheClosest(inProgress, eObj, Side.LEFT, Side.ORIGIN, true);
+			result.put(Side.RIGHT, closestRight);
+			result.put(Side.ORIGIN, closestOrigin);
+		} else if (passedObjectSide == Side.RIGHT) {
+			EObject closestLeft = findTheClosest(inProgress, eObj, Side.RIGHT, Side.LEFT, true);
+			EObject closestOrigin = findTheClosest(inProgress, eObj, Side.RIGHT, Side.ORIGIN, true);
+			result.put(Side.LEFT, closestLeft);
+			result.put(Side.ORIGIN, closestOrigin);
+
+		} else if (passedObjectSide == Side.ORIGIN) {
+			EObject closestLeft = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.LEFT, true);
+			EObject closestRight = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.RIGHT, true);
+			result.put(Side.LEFT, closestLeft);
+			result.put(Side.RIGHT, closestRight);
+		}
+		
+		return result;
+	}
+
+	private EObject findTheClosest(Comparison inProgress, EObject eObj, Side eObjSide, Side sideToFind, boolean shouldDoubleCheck) {
+		ObjectFilterIndex storageToSearchFor = left;
+		switch (sideToFind) {
+			case RIGHT:
+				storageToSearchFor = right;
+				break;
+			case LEFT:
+				storageToSearchFor = left;
+				break;
+			case ORIGIN:
+				storageToSearchFor = origin;
+				break;
+			default:
+				break;
+		}
+
+		Iterable<EObject> cand = storageToSearchFor.filterCandidates(inProgress, eObj, null, 1.0);
+		for (EObject fastCheck : cand) {
+			if (!readyForThisTest(inProgress, fastCheck)) {
+			} else {
+				if (meter.areIdentic(inProgress, eObj, fastCheck)) {
+					return fastCheck;
+				}
+			}
+		}
+
+		Match containerMatch = getPreviousMatch(eObj.eContainer(), inProgress);
+
+		SortedMap<Double, EObject> candidates = Maps.newTreeMap();
+		double minSim = getMinSim(eObj);
+		boolean canCache = true;
+		
+		EObject matchedContainer = null;
+		if(containerMatch!=null) {			
+			switch (sideToFind) {
+			case RIGHT:
+				matchedContainer = containerMatch.getRight();
+				break;
+			case LEFT:
+				matchedContainer = containerMatch.getLeft();
+				break;
+			case ORIGIN:
+				matchedContainer = containerMatch.getOrigin();
+				break;
+			default:
+				break; // never happen
+			}
+		} else {
+			canCache = false;
+		}
+
+		Iterable<EObject> cand2 = storageToSearchFor.filterCandidates(inProgress, eObj, Optional.ofNullable(matchedContainer), minSim);
+
+		double bestDistance = Double.MAX_VALUE;
+		EObject bestObject = null;
+
+		if(shouldDoubleCheck) {
+			for (EObject potentialClosest : cand2) {
+				double dist = meter.distance(inProgress, eObj, potentialClosest, matchedContainer == potentialClosest.eContainer(), true);
+				if (dist < bestDistance) {
+					candidates.compute(Double.valueOf(dist), (key, existingObject)->{
+						if(existingObject == null) return potentialClosest;
+						ElementIndexAdapter existingObjectAdapter = ElementIndexAdapter.getAdapter(existingObject);
+						ElementIndexAdapter potentialObjectAdapter = ElementIndexAdapter.getAdapter(potentialClosest);
+						// FIXME: should we use < or >
+						if(existingObjectAdapter.position < potentialObjectAdapter.position) 
+							return existingObject;
+						else 
+							return potentialClosest;
+					});
+				}
+				// FIXME: the following code should not be executed if we want to be consistent
+				// with EMF Compare
+				// However, the following code may actually improve the result of the match
+				// else if(dist<Double.MAX_VALUE && dist != bestDistance && candidates.size() <
+				// 3) {
+				// candidates.put(Double.valueOf(dist), potentialClosest);
+				// }
+			}
+			// double check
+			for (Entry<Double, EObject> entry : candidates.entrySet()) {
+				EObject doubleCheck = this.findTheClosest(inProgress, entry.getValue(), sideToFind, eObjSide, false);
+				if (doubleCheck == eObj) {
+					return entry.getValue();
+				}
+			}
+		} else {
+			for (EObject potentialClosest : cand2) {
+				double dist;
+				dist = meter.distance(inProgress, eObj, potentialClosest, matchedContainer == potentialClosest.eContainer(), canCache);
+				
+				if (dist < bestDistance) {
+					bestDistance = dist;
+					bestObject = potentialClosest;
+				}
+			}
+		}
+
+		return bestObject;
+	}
+
+	private double getMinSim(EObject eObj) {
+		ClassConfigure configure = matcherConfigure.getClassConfigure(eObj.eClass());
+		return configure.getSimThreshold();
+	}
+
+	public Match getPreviousMatch(final EObject eObj, Comparison inProgress) {
+		if(eObj==null) return null;
+		else return inProgress.getMatch(eObj);
 	}
 
 	@Override

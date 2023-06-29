@@ -32,9 +32,7 @@ import edu.ustb.sei.mde.fastcompare.diff.IDiffProcessor;
 import edu.ustb.sei.mde.fastcompare.utils.AccessBasedLRUCache;
 
 import edu.ustb.sei.mde.fastcompare.utils.DiffUtil;
-import edu.ustb.sei.mde.fastcompare.utils.Pair;
 import edu.ustb.sei.mde.fastcompare.utils.ReferenceUtil;
-import edu.ustb.sei.mde.fastcompare.utils.SimpleLRUCache;
 import edu.ustb.sei.mde.fastcompare.utils.URIComputer;
 
 public class EditionDistance implements DistanceFunction {
@@ -241,14 +239,17 @@ public class EditionDistance implements DistanceFunction {
          * @return the distance between them computed using the number of changes
          *         required to change a to b.
          */
-        public double measureDifferences(Comparison comparisonInProgress, EObject a, EObject b) {
+        public double measureDifferences(Comparison comparisonInProgress, EObject a, EObject b, Boolean haveSameContainer) {
 			EClass clazz = a.eClass();
 			ClassConfigure configure = matcherConfigure.getClassConfigure(clazz);
 
             Match fakeMatch = createOrUpdateFakeMatch(a, b);
             getCounter().reset();
             double changes = 0;
-            if (!haveSameContainer(comparisonInProgress, a, b)) {
+			
+			boolean sameContainer = computeHaveSameContainer(haveSameContainer, comparisonInProgress, a, b);
+
+            if (!sameContainer) {
                 changes += locationChangeCoef * configure.getParentWeight(a);
             } else {
                 int aIndex = DistanceFunction.getContainmentIndex(a);
@@ -481,11 +482,11 @@ public class EditionDistance implements DistanceFunction {
     /**
 	 * {@inheritDoc}
 	 */
-	public double distance(Comparison inProgress, EObject a, EObject b) {
+	public double distance(Comparison inProgress, EObject a, EObject b, Boolean haveSameContainer) {
 		this.uriDistance.setComparison(inProgress);
 		double maxDist = Math.max(getThresholdAmount(a), getThresholdAmount(b));
 		double measuredDist = new CountingDiffEngine(maxDist, this.fakeComparison, matcherConfigure)
-				.measureDifferences(inProgress, a, b);
+				.measureDifferences(inProgress, a, b, haveSameContainer);
 		if (measuredDist > maxDist) {
 			return Double.MAX_VALUE;
 		}
@@ -496,7 +497,7 @@ public class EditionDistance implements DistanceFunction {
 	 * {@inheritDoc}
 	 */
 	public boolean areIdentic(Comparison inProgress, EObject a, EObject b) {
-		return new CountingDiffEngine(0, this.fakeComparison, matcherConfigure).measureDifferences(inProgress, a, b) == 0;
+		return new CountingDiffEngine(0, this.fakeComparison, matcherConfigure).measureDifferences(inProgress, a, b, null) == 0;
 	}
 
 
@@ -561,32 +562,86 @@ public class EditionDistance implements DistanceFunction {
 		return this.matcherConfigure;
 	}
 
-	private AccessBasedLRUCache<Pair<EObject, EObject>, Boolean> sameContainerCache = new AccessBasedLRUCache<>(256, 256, 0.75f);
-	@Override
 	public boolean haveSameContainer(Comparison inProgress, EObject a, EObject b) {
-		Pair<EObject, EObject> pair = new Pair<EObject,EObject>(a, b);
-		Boolean same = sameContainerCache.get(pair);
-		if(same == null) {
-			EObject aContainer = a.eContainer();
-			EObject bContainer = b.eContainer();
-			if ((aContainer == null && bContainer != null) || (aContainer != null && bContainer == null)) {
-				same = false;
-			} else {
-				boolean matching = aContainer == null && bContainer == null;
-				if (!matching) {
-					Match mA = inProgress.getMatch(aContainer);
+		/*
+		 * A simple profiling result shows that uncaching the result will be faster
+		 * But it may not by correct because we didn't try other branches
+		 */
+		boolean same;
+		EObject aContainer = a.eContainer();
+		EObject bContainer = b.eContainer();
+		if ((aContainer == null && bContainer != null) || (aContainer != null && bContainer == null)) {
+			same = false;
+		} else {
+			boolean matching = aContainer == null && bContainer == null;
+			if (!matching) {
+				Match mA = inProgress.getMatch(aContainer);
+				if (mA == null) {
 					Match mB = inProgress.getMatch(bContainer);
-					if (mA == null && mB == null) {
+					if (mB == null) {
 						matching = EqualityHelper.getEqualityHelper(fakeComparison).matchingValues(aContainer, bContainer);
 					} else {
-						matching = DistanceFunction.isReferencedByTheMatch(bContainer, mA)
-								|| DistanceFunction.isReferencedByTheMatch(aContainer, mB);
+						matching = DistanceFunction.isReferencedByTheMatch(aContainer, mB);
+					}
+				} else {
+					if (DistanceFunction.isReferencedByTheMatch(bContainer, mA)) {
+						matching = true;
+					} else {
+						Match mB = inProgress.getMatch(bContainer);
+						if (mB == null) {
+							matching = false;
+						} else {
+							matching = DistanceFunction.isReferencedByTheMatch(aContainer, mB);
+						}
 					}
 				}
-				same = matching;
 			}
-			sameContainerCache.put(pair, same);
+			same = matching;
 		}
 		return same;
 	}
+	// ALTERNATIVE VERSION OF haveSameContainer
+	// private AccessBasedLRUCache<Pair<EObject, EObject>, Boolean> sameContainerCache = new AccessBasedLRUCache<>(4096, 4096, 0.75f);
+	// private Pair<EObject, EObject> tempPair = new Pair<EObject,EObject>(null, null);
+	// @Override
+	// public boolean haveSameContainer(Comparison inProgress, EObject a, EObject b) {
+	// 	tempPair.first = a;
+	// 	tempPair.second = b;
+	// 	Boolean same = sameContainerCache.get(tempPair);
+	// 	if(same == null) {
+	// 		EObject aContainer = a.eContainer();
+	// 		EObject bContainer = b.eContainer();
+	// 		if ((aContainer == null && bContainer != null) || (aContainer != null && bContainer == null)) {
+	// 			same = false;
+	// 		} else {
+	// 			boolean matching = aContainer == null && bContainer == null;
+	// 			if (!matching) {
+	// 				Match mA = inProgress.getMatch(aContainer);
+	// 				if(mA == null) {
+	// 					Match mB = inProgress.getMatch(bContainer);
+	// 					if(mB == null) {
+	// 						matching = EqualityHelper.getEqualityHelper(fakeComparison).matchingValues(aContainer, bContainer);
+	// 					} else {
+	// 						matching = DistanceFunction.isReferencedByTheMatch(aContainer, mB);
+	// 					}
+	// 				} else {
+	// 					if(DistanceFunction.isReferencedByTheMatch(bContainer, mA)) {
+	// 						matching = true;
+	// 					} else {
+	// 						Match mB = inProgress.getMatch(bContainer);
+	// 						if (mB == null) {
+	// 							matching = false;
+	// 						} else {
+	// 							matching = DistanceFunction.isReferencedByTheMatch(aContainer, mB);
+	// 						}
+	// 					}
+	// 				}
+	// 			}
+	// 			same = matching;
+	// 		}
+	// 		sameContainerCache.put(new Pair<>(tempPair.first, tempPair.second), same);
+	// 	}
+	// 	return same;
+	// }
+	// END
 }

@@ -19,23 +19,22 @@ public class CachingDistanceFunction implements DistanceFunction {
 	}
 
 	@Override
-	public double distance(Comparison inProgress, EObject a, EObject b) {
+	public double distance(Comparison inProgress, EObject a, EObject b, Boolean haveSameContainer) {
 		TupleKey<EObject, DistanceFunction> key = new TupleKey<EObject, DistanceFunction>(a, b, this, TupleKey.otherPred);
 		Double previousResult = distanceCache.get(key);
 		if (previousResult == null) {
-			double dist = meter.distance(inProgress, a, b);
+			double dist = meter.distance(inProgress, a, b, haveSameContainer);
 			distanceCache.put(key, Double.valueOf(dist));
-			// cache it
 			return dist;
 		}
 		return previousResult.doubleValue();
 	}
 
-	public double distance(Comparison inProgress, EObject a, EObject b, boolean canCache) {
+	public double distance(Comparison inProgress, EObject a, EObject b, Boolean haveSameContainer, boolean canCache) {
 		if(canCache) {
-			return this.distance(inProgress, a, b);
+			return this.distance(inProgress, a, b, haveSameContainer);
 		} else 
-			return meter.distance(inProgress, a, b);
+			return meter.distance(inProgress, a, b, haveSameContainer);
 	}
 
 	@Override
