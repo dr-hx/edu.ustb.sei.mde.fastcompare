@@ -2,12 +2,12 @@ package edu.ustb.sei.mde.fastcompare.config;
 
 import org.eclipse.emf.ecore.EObject;
 
-import edu.ustb.sei.mde.fastcompare.ihash.IElementHasher;
-import edu.ustb.sei.mde.fastcompare.shash.SElementHasher;
+import edu.ustb.sei.mde.fastcompare.ihash.ElementIHasher;
+import edu.ustb.sei.mde.fastcompare.shash.ElementSHasher;
 
 public class Hasher {
-    private SElementHasher simhasher;
-    private IElementHasher idhasher;
+    private ElementSHasher simhasher;
+    private ElementIHasher idhasher;
     
 
     public long computeSHash(EObject o) {

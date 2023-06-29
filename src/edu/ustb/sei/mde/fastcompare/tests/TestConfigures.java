@@ -7,6 +7,7 @@ import org.eclipse.emf.compare.CompareFactory;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.junit.Assert;
 import org.junit.Test;
@@ -14,6 +15,7 @@ import org.junit.Test;
 import edu.ustb.sei.mde.fastcompare.config.ClassConfigure;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.config.MutableFeatureConfigure;
+import edu.ustb.sei.mde.fastcompare.ihash.ElementIHasher;
 import edu.ustb.sei.mde.fastcompare.match.EditionDistance;
 
 public class TestConfigures {
@@ -69,6 +71,15 @@ public class TestConfigures {
                 if(distance != eDistance)
                     System.out.println("("+cl.getName() +","+cr.getName()+")=("+distance+","+eDistance+")");
             }
+        }
+    }
+
+    @Test
+    public void testIHasher() {
+        MatcherConfigure configure = new MatcherConfigure();
+        ElementIHasher hasher = new ElementIHasher(configure);
+        for(EObject obj : EcorePackage.eINSTANCE.eContents()) {
+            System.out.println(obj +"\n\t" + hasher.hash(obj));
         }
     }
 }

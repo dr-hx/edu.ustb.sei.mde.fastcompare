@@ -15,6 +15,15 @@ import edu.ustb.sei.mde.fastcompare.shash.SHashFunction;
 
 public class App {
     public static void main(String[] args) throws Exception {
+        java.util.zip.CRC32 crc  = new CRC32();
+
+        crc.update("abcdef".getBytes());
+        System.out.println(crc.getValue());
+        crc.reset();
+        crc.update("abc".getBytes());
+        crc.update("def".getBytes());
+        System.out.println(crc.getValue());
+
         // testHaveSameContainer();
     }
 
