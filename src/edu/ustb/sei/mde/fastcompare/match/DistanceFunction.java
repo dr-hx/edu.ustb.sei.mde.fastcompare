@@ -1,7 +1,16 @@
 package edu.ustb.sei.mde.fastcompare.match;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.compare.Comparison;
+import org.eclipse.emf.compare.Match;
+import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.util.FeatureMap;
+
+import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
+import edu.ustb.sei.mde.fastcompare.utils.DiffUtil;
+import edu.ustb.sei.mde.fastcompare.utils.ReferenceUtil;
 
 public interface DistanceFunction {
     /**
@@ -43,4 +52,62 @@ public interface DistanceFunction {
      */
     boolean areIdentic(Comparison inProgress, EObject a, EObject b);
 
+    MatcherConfigure getMatcherConfigure();
+
+    boolean haveSameContainer(Comparison inProgress, EObject a, EObject b);
+
+    static public boolean isReferencedByTheMatch(EObject eObj, Match match) {
+		return match != null
+				&& (match.getRight() == eObj || match.getLeft() == eObj || match.getOrigin() == eObj);
+	}
+
+	/**
+	 * return the position in which an Object is contained in its parent list.
+	 * 
+	 * @param a
+	 *          any EObject
+	 * @return the position in which an Object is contained in its parent list, 0 if
+	 *         there is no container
+	 *         or if the reference is single valued.
+	 */
+	static public int getContainmentIndex(EObject a) {
+		EStructuralFeature feat = a.eContainingFeature();
+		EObject container = a.eContainer();
+		int position = 0;
+		if (container != null) {
+			if (feat instanceof EAttribute) {
+				position = indexFromFeatureMap(a, feat, container);
+			} else if (feat != null) {
+				if (feat.isMany()) {
+					EList<?> eList = (EList<?>) ReferenceUtil.safeEGet(container, feat);
+					position = eList.indexOf(a);
+				}
+			}
+		}
+		return position;
+	}
+
+	/**
+	 * the position of the {@link EObject} a in its container featureMap.
+	 * 
+	 * @param a
+	 *                  the {@link EObject}.
+	 * @param feat
+	 *                  the containing feature.
+	 * @param container
+	 *                  the containing EObject.
+	 * @return the position of the {@link EObject} a in its container featureMap.
+	 */
+	static public int indexFromFeatureMap(EObject a, EStructuralFeature feat, EObject container) {
+		FeatureMap featureMap = (FeatureMap) ReferenceUtil.safeEGet(container, feat);
+		for (int i = 0, size = featureMap.size(); i < size; ++i) {
+			if (featureMap.getValue(i) == a) {
+				EStructuralFeature entryFeature = featureMap.getEStructuralFeature(i);
+				if (DiffUtil.isContainmentReference(entryFeature)) {
+					return i;
+				}
+			}
+		}
+		return 0;
+	}
 }

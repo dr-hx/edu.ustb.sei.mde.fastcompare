@@ -6,10 +6,11 @@ import java.util.function.BiPredicate;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.ecore.EObject;
 
+import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.utils.AccessBasedLRUCache;
 
 public class CachingDistanceFunction implements DistanceFunction {
-    private final DistanceFunction meter;
+    protected final DistanceFunction meter;
 	protected Map<TupleKey<EObject, DistanceFunction>, Double> distanceCache;	
 
 	public CachingDistanceFunction(DistanceFunction meter) {
@@ -109,5 +110,15 @@ public class CachingDistanceFunction implements DistanceFunction {
 
 		}
 	}
-    
+
+
+	@Override
+	public MatcherConfigure getMatcherConfigure() {
+		return meter.getMatcherConfigure();
+	}
+
+	@Override
+	public boolean haveSameContainer(Comparison inProgress, EObject a, EObject b) {
+		return meter.haveSameContainer(inProgress, a, b);
+	}
 }

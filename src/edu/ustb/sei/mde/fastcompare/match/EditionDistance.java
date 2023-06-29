@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.compare.CompareFactory;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.DifferenceKind;
@@ -19,7 +18,6 @@ import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.util.FeatureMap;
 
 import org.eclipse.emf.ecore.util.InternalEList;
 
@@ -34,7 +32,9 @@ import edu.ustb.sei.mde.fastcompare.diff.IDiffProcessor;
 import edu.ustb.sei.mde.fastcompare.utils.AccessBasedLRUCache;
 
 import edu.ustb.sei.mde.fastcompare.utils.DiffUtil;
+import edu.ustb.sei.mde.fastcompare.utils.Pair;
 import edu.ustb.sei.mde.fastcompare.utils.ReferenceUtil;
+import edu.ustb.sei.mde.fastcompare.utils.SimpleLRUCache;
 import edu.ustb.sei.mde.fastcompare.utils.URIComputer;
 
 public class EditionDistance implements DistanceFunction {
@@ -251,8 +251,8 @@ public class EditionDistance implements DistanceFunction {
             if (!haveSameContainer(comparisonInProgress, a, b)) {
                 changes += locationChangeCoef * configure.getParentWeight(a);
             } else {
-                int aIndex = getContainmentIndex(a);
-                int bIndex = getContainmentIndex(b);
+                int aIndex = DistanceFunction.getContainmentIndex(a);
+                int bIndex = DistanceFunction.getContainmentIndex(b);
                 if (aIndex != bIndex) {
                     /*
                      * we just want to pick the same positioned object if two exactly similar
@@ -333,113 +333,6 @@ public class EditionDistance implements DistanceFunction {
                     return super.getFeaturesToCheck(clazz);
                 }
             };
-        }
-
-        /**
-         * return the position in which an Object is contained in its parent list.
-         * 
-         * @param a
-         *          any EObject
-         * @return the position in which an Object is contained in its parent list, 0 if
-         *         there is no container
-         *         or if the reference is single valued.
-         */
-        private int getContainmentIndex(EObject a) {
-            EStructuralFeature feat = a.eContainingFeature();
-            EObject container = a.eContainer();
-            int position = 0;
-            if (container != null) {
-                if (feat instanceof EAttribute) {
-                    position = indexFromFeatureMap(a, feat, container);
-                } else if (feat != null) {
-                    if (feat.isMany()) {
-                        EList<?> eList = (EList<?>) ReferenceUtil.safeEGet(container, feat);
-                        position = eList.indexOf(a);
-                    }
-                }
-            }
-            return position;
-        }
-
-        /**
-         * the position of the {@link EObject} a in its container featureMap.
-         * 
-         * @param a
-         *                  the {@link EObject}.
-         * @param feat
-         *                  the containing feature.
-         * @param container
-         *                  the containing EObject.
-         * @return the position of the {@link EObject} a in its container featureMap.
-         */
-        private int indexFromFeatureMap(EObject a, EStructuralFeature feat, EObject container) {
-            FeatureMap featureMap = (FeatureMap) ReferenceUtil.safeEGet(container, feat);
-            for (int i = 0, size = featureMap.size(); i < size; ++i) {
-                if (featureMap.getValue(i) == a) {
-                    EStructuralFeature entryFeature = featureMap.getEStructuralFeature(i);
-                    if (DiffUtil.isContainmentReference(entryFeature)) {
-                        return i;
-                    }
-                }
-            }
-            return 0;
-        }
-
-        /**
-         * Check whether two {@link EObject} have the same containers or not.
-         * 
-         * @param inProgress
-         *                   the comparison currently being matched.
-         * @param a
-         *                   any {@link EObject}
-         * @param b
-         *                   any other {@link EObject}
-         * @return true if they have the same container. If the containers have been
-         *         matched their match will
-         *         be used, on the contrary the URI will be indirectly use through the
-         *         EqualityHelper.
-         */
-        private boolean haveSameContainer(Comparison inProgress, EObject a, EObject b) {
-            EObject aContainer = a.eContainer();
-            EObject bContainer = b.eContainer();
-            if ((aContainer == null && bContainer != null) || (aContainer != null && bContainer == null)) {
-                return false;
-            }
-            /*
-             * we consider two null containers as being the "same".
-             */
-            boolean matching = aContainer == null && bContainer == null;
-            if (!matching) {
-                Match mA = inProgress.getMatch(aContainer);
-                Match mB = inProgress.getMatch(bContainer);
-                if (mA == null && mB == null) {
-                    /*
-                     * The Objects have to be out of scope then.
-                     */
-                    matching = fakeComparison.getEqualityHelper().matchingValues(aContainer, bContainer);
-                } else {
-                    matching = isReferencedByTheMatch(bContainer, mA)
-                            || isReferencedByTheMatch(aContainer, mB);
-                }
-            }
-            return matching;
-        }
-
-        /**
-         * Return true if the given {@link EObject} is referenced by the left/right or
-         * origin match reference.
-         * 
-         * @param eObj
-         *              any {@link EObject}.
-         * @param match
-         *              any Match.
-         * @return true if the given {@link EObject} is referenced by the left/right or
-         *         origin match
-         *         reference.
-         */
-        private boolean isReferencedByTheMatch(EObject eObj, Match match) {
-            return match != null
-                    && (match.getRight() == eObj || match.getLeft() == eObj || match.getOrigin() == eObj);
         }
 
         /**
@@ -663,4 +556,37 @@ public class EditionDistance implements DistanceFunction {
 		return thresholds[nbFeatures];
 	}
 
+	@Override
+	public MatcherConfigure getMatcherConfigure() {
+		return this.matcherConfigure;
+	}
+
+	private AccessBasedLRUCache<Pair<EObject, EObject>, Boolean> sameContainerCache = new AccessBasedLRUCache<>(256, 256, 0.75f);
+	@Override
+	public boolean haveSameContainer(Comparison inProgress, EObject a, EObject b) {
+		Pair<EObject, EObject> pair = new Pair<EObject,EObject>(a, b);
+		Boolean same = sameContainerCache.get(pair);
+		if(same == null) {
+			EObject aContainer = a.eContainer();
+			EObject bContainer = b.eContainer();
+			if ((aContainer == null && bContainer != null) || (aContainer != null && bContainer == null)) {
+				same = false;
+			} else {
+				boolean matching = aContainer == null && bContainer == null;
+				if (!matching) {
+					Match mA = inProgress.getMatch(aContainer);
+					Match mB = inProgress.getMatch(bContainer);
+					if (mA == null && mB == null) {
+						matching = EqualityHelper.getEqualityHelper(fakeComparison).matchingValues(aContainer, bContainer);
+					} else {
+						matching = DistanceFunction.isReferencedByTheMatch(bContainer, mA)
+								|| DistanceFunction.isReferencedByTheMatch(aContainer, mB);
+					}
+				}
+				same = matching;
+			}
+			sameContainerCache.put(pair, same);
+		}
+		return same;
+	}
 }
