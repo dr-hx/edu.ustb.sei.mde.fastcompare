@@ -1,18 +1,45 @@
 package edu.ustb.sei.mde.fastcompare.index;
 
+import java.util.zip.CRC32;
+
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
+import org.eclipse.emf.compare.match.eobject.ProximityEObjectMatcher;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import edu.ustb.sei.mde.fastcompare.shash.Hash64;
+import edu.ustb.sei.mde.fastcompare.utils.CommonUtils;
 
 /**
  * This class is used to store element indices.
  */
 public class ElementIndexAdapter extends AdapterImpl {
-    public long localIdentityHash;
+    private static final long INVALID_IHASH = 0xF000000000000000L;
+
+    public long localIdentityHash = INVALID_IHASH;
     public Hash64 similarityHash;
-    public long treeIdentityHash;
+    private long treeIdentityHash = INVALID_IHASH;
+
+    public long getSubtreeIdentityHash() {
+        if(treeIdentityHash == INVALID_IHASH) {
+            if(localIdentityHash == INVALID_IHASH) return INVALID_IHASH;
+            CRC32 crc32 = new CRC32();
+            CommonUtils.update(crc32, localIdentityHash);
+            CommonUtils.update(crc32, "{");
+            EObject object = (EObject) this.getTarget();
+            for(EObject child : object.eContents()) {
+                ElementIndexAdapter childAdapter = ElementIndexAdapter.getAdapter(child);
+                long childTreeHash = childAdapter.getSubtreeIdentityHash();
+                if(childTreeHash != INVALID_IHASH) {
+                    CommonUtils.update(crc32, childTreeHash);
+                }
+            }
+            CommonUtils.update(crc32, "}");
+            treeIdentityHash = crc32.getValue();
+        }
+
+        return treeIdentityHash;
+    }
 
     public int position;
 

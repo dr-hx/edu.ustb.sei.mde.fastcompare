@@ -25,7 +25,11 @@ public class HashFilterIndex implements ObjectFilterIndex {
     private final MatcherConfigure matcherConfigure;
 
     public HashFilterIndex(MatcherConfigure configure) {
-        integrityMap = new HashMap<>();
+        if(configure.isUsingIdentityHash()) {
+            integrityMap = null;
+        } else {
+            integrityMap = new HashMap<>();
+        }
         similarityMap = new HashMap<>();
         allObjects = ObjectFilterIndex.createSet(null);
         this.matcherConfigure = configure;
@@ -50,9 +54,15 @@ public class HashFilterIndex implements ObjectFilterIndex {
         CommonUtils.checkNotNull(eObjAdapter);
 
         if(threshold == 0) {
-            long idhash = eObjAdapter.localIdentityHash;
-            Set<EObject> candidates = integrityMap.getOrDefault(idhash, Collections.emptySet());
-            return candidates;
+            if(this.integrityMap!=null) {
+                long idhash = eObjAdapter.localIdentityHash;
+                Set<EObject> candidates = integrityMap.getOrDefault(idhash, Collections.emptySet());
+                return candidates;
+            } else {
+                Hash64 shash = eObjAdapter.similarityHash;
+                Set<EObject> candidates = integrityMap.getOrDefault(shash, Collections.emptySet());
+                return candidates;
+            }
         } else {
             double minSim = this.matcherConfigure.getClassConfigure(eObj.eClass()).getSimThreshold();
             double containerDiff = getContainerSimilarityRatio(eObj);
@@ -86,8 +96,10 @@ public class HashFilterIndex implements ObjectFilterIndex {
         ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(eObj);
         allObjects.remove(eObj);
         Set<EObject> list;
-        list = integrityMap.get(adapter.localIdentityHash);
-        if(list!=null) list.remove(eObj);
+        if(integrityMap!=null) {
+            list = integrityMap.get(adapter.localIdentityHash);
+            if(list!=null) list.remove(eObj);
+        }
         list = similarityMap.get(adapter.similarityHash);
         if(list!=null) list.remove(eObj);
     }
@@ -96,8 +108,10 @@ public class HashFilterIndex implements ObjectFilterIndex {
         ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(eObj);
         allObjects.add(eObj);
         Set<EObject> list;
-        list = integrityMap.computeIfAbsent(adapter.localIdentityHash, ObjectFilterIndex::createSet);
-        list.add(eObj);
+        if(integrityMap!=null) {
+            list = integrityMap.computeIfAbsent(adapter.localIdentityHash, ObjectFilterIndex::createSet);
+            list.add(eObj);
+        }
         list = similarityMap.computeIfAbsent(adapter.similarityHash, ObjectFilterIndex::createSet);
         list.add(eObj);
     }

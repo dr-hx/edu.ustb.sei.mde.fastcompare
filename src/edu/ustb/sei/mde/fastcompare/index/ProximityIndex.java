@@ -10,7 +10,6 @@ import java.util.function.Function;
 
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Match;
-import org.eclipse.emf.compare.match.eobject.ScopeQuery;
 import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.collect.Maps;
@@ -20,6 +19,8 @@ import edu.ustb.sei.mde.fastcompare.config.Hasher;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.match.CachingDistanceFunction;
 import edu.ustb.sei.mde.fastcompare.match.CachingDistanceFunctionEx;
+import edu.ustb.sei.mde.fastcompare.match.ScopeQuery;
+import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
 
 public class ProximityIndex implements ObjectIndex {
     final private ScopeQuery scope;
@@ -35,7 +36,7 @@ public class ProximityIndex implements ObjectIndex {
 		this.scope = scope;
 		this.matcherConfigure = matcherConfigure;
 
-		if(matcherConfigure.isUseIdentityHash()) {
+		if(matcherConfigure.isUsingIdentityHash()) {
 			this.meter = new CachingDistanceFunctionEx(matcherConfigure.getDistanceFunction());
 		} else {
 			this.meter = new CachingDistanceFunction(matcherConfigure.getDistanceFunction());
@@ -68,28 +69,70 @@ public class ProximityIndex implements ObjectIndex {
 
 	@Override
 	public Map<Side, EObject> findClosests(Comparison inProgress, EObject eObj, Side passedObjectSide) {
+		// findClosests must be able to handle partial match
+		// For partial match, there may exist a match for eObj in which not all the sides are determined.
 		if (!readyForThisTest(inProgress, eObj)) {
 			return null;
 		}
 
+		Match partialMatch = MatchUtil.getMatch(eObj, inProgress);
+
 		Map<Side, EObject> result = new HashMap<Side, EObject>(3);
 		result.put(passedObjectSide, eObj);
 		if (passedObjectSide == Side.LEFT) {
-			EObject closestRight = findTheClosest(inProgress, eObj, Side.LEFT, Side.RIGHT, true);
-			EObject closestOrigin = findTheClosest(inProgress, eObj, Side.LEFT, Side.ORIGIN, true);
-			result.put(Side.RIGHT, closestRight);
-			result.put(Side.ORIGIN, closestOrigin);
+			if(partialMatch == null) {
+				EObject closestRight = findTheClosest(inProgress, eObj, Side.LEFT, Side.RIGHT, true);
+				EObject closestOrigin = findTheClosest(inProgress, eObj, Side.LEFT, Side.ORIGIN, true);
+				result.put(Side.RIGHT, closestRight);
+				result.put(Side.ORIGIN, closestOrigin);
+			} else {
+				EObject closestRight;
+				if(partialMatch.getRight() == MatchUtil.PSEUDO_MATCHED_OBJECT) 
+					closestRight = findTheClosest(inProgress, eObj, Side.LEFT, Side.RIGHT, true);
+				else closestRight = partialMatch.getRight();
+				EObject closestOrigin;
+				if(partialMatch.getOrigin() == MatchUtil.PSEUDO_MATCHED_OBJECT) 
+					closestOrigin = findTheClosest(inProgress, eObj, Side.LEFT, Side.ORIGIN, true);
+				else closestOrigin = partialMatch.getOrigin();
+				result.put(Side.RIGHT, closestRight);
+				result.put(Side.ORIGIN, closestOrigin);
+			}
 		} else if (passedObjectSide == Side.RIGHT) {
-			EObject closestLeft = findTheClosest(inProgress, eObj, Side.RIGHT, Side.LEFT, true);
-			EObject closestOrigin = findTheClosest(inProgress, eObj, Side.RIGHT, Side.ORIGIN, true);
-			result.put(Side.LEFT, closestLeft);
-			result.put(Side.ORIGIN, closestOrigin);
-
+			if(partialMatch == null) {
+				EObject closestLeft = findTheClosest(inProgress, eObj, Side.RIGHT, Side.LEFT, true);
+				EObject closestOrigin = findTheClosest(inProgress, eObj, Side.RIGHT, Side.ORIGIN, true);
+				result.put(Side.LEFT, closestLeft);
+				result.put(Side.ORIGIN, closestOrigin);
+			} else {
+				EObject closestLeft;
+				if(partialMatch.getLeft() == MatchUtil.PSEUDO_MATCHED_OBJECT)
+					closestLeft = findTheClosest(inProgress, eObj, Side.RIGHT, Side.LEFT, true);
+				else closestLeft = partialMatch.getLeft();
+				EObject closestOrigin;
+				if(partialMatch.getOrigin() == MatchUtil.PSEUDO_MATCHED_OBJECT)
+					closestOrigin = findTheClosest(inProgress, eObj, Side.RIGHT, Side.ORIGIN, true);
+				else closestOrigin = partialMatch.getOrigin();
+				result.put(Side.LEFT, closestLeft);
+				result.put(Side.ORIGIN, closestOrigin);
+			}
 		} else if (passedObjectSide == Side.ORIGIN) {
-			EObject closestLeft = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.LEFT, true);
-			EObject closestRight = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.RIGHT, true);
-			result.put(Side.LEFT, closestLeft);
-			result.put(Side.RIGHT, closestRight);
+			if(partialMatch == null) {
+				EObject closestLeft = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.LEFT, true);
+				EObject closestRight = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.RIGHT, true);
+				result.put(Side.LEFT, closestLeft);
+				result.put(Side.RIGHT, closestRight);
+			} else {
+				EObject closestLeft;
+				if(partialMatch.getLeft() == MatchUtil.PSEUDO_MATCHED_OBJECT)
+					closestLeft = findTheClosest(inProgress, eObj, Side.RIGHT, Side.LEFT, true);
+				else closestLeft = partialMatch.getLeft();
+				EObject closestRight;
+				if(partialMatch.getRight() == MatchUtil.PSEUDO_MATCHED_OBJECT) 
+					closestRight = findTheClosest(inProgress, eObj, Side.LEFT, Side.RIGHT, true);
+				else closestRight = partialMatch.getRight();
+				result.put(Side.LEFT, closestLeft);
+				result.put(Side.RIGHT, closestRight);
+			}
 		}
 		
 		return result;
@@ -141,6 +184,9 @@ public class ProximityIndex implements ObjectIndex {
 				break;
 			default:
 				break; // never happen
+			}
+			if(matchedContainer == MatchUtil.PSEUDO_MATCHED_OBJECT) {
+				throw new RuntimeException("This should not happen!");
 			}
 		} else {
 			canCache = false;

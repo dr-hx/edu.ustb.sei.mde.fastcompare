@@ -54,7 +54,7 @@ public class MatcherConfigure {
         this.distanceFunction = new EditionDistance(this);
     }
 
-    public boolean isUseIdentityHash() {
+    public boolean isUsingIdentityHash() {
         return useIdentityHash;
     }
 

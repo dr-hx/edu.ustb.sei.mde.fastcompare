@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.emf.compare.Comparison;
-import org.eclipse.emf.compare.match.eobject.ScopeQuery;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 
@@ -14,6 +13,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
+import edu.ustb.sei.mde.fastcompare.match.ScopeQuery;
 
 public class ByTypeIndex implements ObjectIndex {
     final private ScopeQuery scope;

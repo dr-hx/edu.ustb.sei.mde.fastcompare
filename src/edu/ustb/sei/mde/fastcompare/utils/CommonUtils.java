@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.zip.CRC32;
 
 import com.google.common.collect.FluentIterable;
 
@@ -110,5 +111,25 @@ public class CommonUtils {
                 return CommonUtils.filter(unfiltered.spliterator(), retainIfTrue);
             }
         };
+    }
+
+
+    static public void update(CRC32 crc32, long value) {
+        int h = (int) (value >>> 32);
+        int l = (int) (value & 0xFFFFFFFFL);
+        crc32.update(h);
+        crc32.update(l);
+    }
+
+    static public void update(CRC32 crc32, int value) {
+        crc32.update(value);
+    }
+
+    static public void update(CRC32 crc32, double value) {
+        update(crc32, Double.doubleToLongBits(value));
+    }
+
+    static public void update(CRC32 crc32, String str) {
+        crc32.update(str.getBytes());
     }
 }
