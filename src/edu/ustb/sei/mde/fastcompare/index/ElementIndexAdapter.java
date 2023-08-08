@@ -3,7 +3,6 @@ package edu.ustb.sei.mde.fastcompare.index;
 import java.util.zip.CRC32;
 
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
-import org.eclipse.emf.compare.match.eobject.ProximityEObjectMatcher;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
@@ -16,9 +15,16 @@ import edu.ustb.sei.mde.fastcompare.utils.CommonUtils;
 public class ElementIndexAdapter extends AdapterImpl {
     private static final long INVALID_IHASH = 0xF000000000000000L;
 
+    public int depth = 0;
+    public Hash64 similarityHash = null;
     public long localIdentityHash = INVALID_IHASH;
-    public Hash64 similarityHash;
     private long treeIdentityHash = INVALID_IHASH;
+
+    public void init() {
+        localIdentityHash = INVALID_IHASH;
+        similarityHash = null;
+        treeIdentityHash = INVALID_IHASH;
+    }
 
     public long getSubtreeIdentityHash() {
         if(treeIdentityHash == INVALID_IHASH) {
@@ -58,15 +64,15 @@ public class ElementIndexAdapter extends AdapterImpl {
         totalNumbers = 0;
     }
 
-    static public void equip(EObject object) {
+    static public ElementIndexAdapter equip(EObject object) {
         ElementIndexAdapter adapter = (ElementIndexAdapter) EcoreUtil.getExistingAdapter(object, ElementIndexAdapter.class);
         if(adapter == null) {
             adapter = new ElementIndexAdapter();
             object.eAdapters().add(0, adapter);
         } else {
-            object.eAdapters().remove(adapter);
-            equip(object);
+            adapter.init();
         }
+        return adapter;
     }
 
     static public ElementIndexAdapter getAdapter(EObject obj) {

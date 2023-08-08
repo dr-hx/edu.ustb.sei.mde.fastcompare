@@ -9,6 +9,8 @@ public class Hash64 {
         this.bitCounts = Hash64.computeBitCounts(h);
     }
 
+    static final public Hash64 ZERO_HASH = new Hash64(0);
+
     
 
     @Override

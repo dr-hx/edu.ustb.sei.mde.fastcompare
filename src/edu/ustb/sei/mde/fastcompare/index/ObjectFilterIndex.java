@@ -13,6 +13,7 @@ public interface ObjectFilterIndex {
     Iterable<EObject> filterCandidates(Comparison inProgress, EObject eObj, Optional<EObject> candidateContainer, double threshold);
     void remove(EObject eObj);
     void index(EObject eObj);
+    void indexTree(EObject root);
     
     public static <T> Set<EObject> createSet(T k) {
         return new LinkedHashSet<>(128);

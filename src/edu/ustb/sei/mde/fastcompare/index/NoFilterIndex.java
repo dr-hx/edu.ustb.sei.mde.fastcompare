@@ -34,5 +34,9 @@ public class NoFilterIndex implements ObjectFilterIndex {
     public void index(EObject eObj) {
         allObjects.add(eObj);
     }
+
+    @Override
+    public void indexTree(EObject root) {
+    }
     
 }

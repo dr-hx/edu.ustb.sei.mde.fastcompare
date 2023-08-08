@@ -11,6 +11,10 @@ public class MatchUtil {
     static final private SimpleLRUCache<EObject, Match> matchCache = new SimpleLRUCache<>();
     static public boolean isFullyMatched(EObject object, Comparison inProgress) {
         Match m = getMatch(object, inProgress);
+        return isFullMatch(m);
+    }
+
+    public static boolean isFullMatch(Match m) {
         return m != null && m.getLeft() != PSEUDO_MATCHED_OBJECT && m.getRight() != PSEUDO_MATCHED_OBJECT && m.getOrigin() != PSEUDO_MATCHED_OBJECT;
     }
 

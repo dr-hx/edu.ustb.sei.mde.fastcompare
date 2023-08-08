@@ -66,4 +66,5 @@ public interface ObjectIndex {
 	 */
 	void index(EObject eObj, Side side);
 
+    void buildTreeIndex(EObject root, Side side);
 }

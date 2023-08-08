@@ -60,4 +60,12 @@ public class ByTypeIndex implements ObjectIndex {
         });
         subIndex.index(eObj, side);
 	}
+
+	@Override
+	public void buildTreeIndex(EObject root, Side side) {
+		ObjectIndex subIndex = allIndexes.get(root.eClass());
+		if(subIndex != null) {
+			subIndex.buildTreeIndex(root, side);
+		}
+	}
 }

@@ -26,79 +26,126 @@ public class ElementIHasher {
     }
 
     public long hash(EObject element) {
-        builder = new StringBuilder();
+        reset();
         serializeEObject(element);
-        String string = builder.toString();
-        crc32.reset();
-        crc32.update(string.getBytes());
         return crc32.getValue();
     }
 
     private CRC32 crc32 = new CRC32();
+    private void reset() {
+        crc32.reset();
+    }
 
-    StringBuilder builder = null;
-    void serializePrimitiveValue(Object value) {
+    static private final byte[] byteCache = new byte[8];
+    private void append(int value) {
+        byteCache[0] = (byte) (value & 0xFF);
+        byteCache[1] = (byte) ((value >>> 8) & 0xFF);
+        byteCache[2] = (byte) ((value >>> 16) & 0xFF);
+        byteCache[3] = (byte) ((value >>> 24) & 0xFF);
+        crc32.update(byteCache, 0, 4);
+    }
+
+    private void append(boolean value) {
+        if(value) crc32.update("true".getBytes());
+        else  crc32.update("false".getBytes());
+    }
+
+    private void append(String value) {
+        crc32.update(value.getBytes());
+    }
+
+    private void append(long value) {
+        append((int)(value & 0xFFFFFFFFL));
+        append((int)((value >>> 32) & 0xFFFFFFFFL));
+    }
+
+    private void append(double value) {
+        append(Double.doubleToLongBits(value));
+    }
+
+    private void append(float value) {
+        append(Float.floatToIntBits(value));
+    }
+
+    private void append(byte value) {
+        byteCache[0] = value;
+        crc32.update(byteCache, 0, 1);
+    }
+
+    private void append(char value) {
+        byteCache[0] = (byte) (value & 0xFF);
+        byteCache[1] = (byte) ((value >>> 8) & 0xFF);
+        crc32.update(byteCache, 0, 2);
+    }
+
+    private void append(short value) {
+        byteCache[0] = (byte) (value & 0xFF);
+        byteCache[1] = (byte) ((value >>> 8) & 0xFF);
+        crc32.update(byteCache, 0, 2);
+    }
+
+    private void serializePrimitiveValue(Object value) {
         if(value == null) {
-            builder.append("null");
+            append("null");
         } else {
             Class<?> valueType = value.getClass();
             if (valueType == Integer.class) {
-                builder.append(((Integer) value).intValue());
+                append(((Integer) value).intValue());
             } else if (valueType == Boolean.class) {
-                builder.append(((Boolean) value).booleanValue());
+                append(((Boolean) value).booleanValue());
             } else if (valueType == String.class) {
-                builder.append(((String) value));
+                append(((String) value));
             } else if (valueType == Long.class) {
-                builder.append(((Long) value).longValue());
+                append(((Long) value).longValue());
             } else if (valueType == Double.class) {
-                builder.append(((Double) value).doubleValue());
+                append(((Double) value).doubleValue());
             } else if (valueType == Float.class) {
-                builder.append(((Float) value).floatValue());
+                append(((Float) value).floatValue());
             } else if (valueType == Byte.class) {
-                builder.append(((Byte) value).byteValue());
+                append(((Byte) value).byteValue());
             } else if (valueType == Character.class) {
-                builder.append(((Character) value).charValue());
+                append(((Character) value).charValue());
             } else if (valueType == Short.class) {
-                builder.append(((Short) value).shortValue());
+                append(((Short) value).shortValue());
             } else {
-                builder.append(valueType.getName());
+                append(valueType.getName());
             }
         }
     }
 
-    void serializeReferencedEObject(EObject value) {
+    private void serializeReferencedEObject(EObject value) {
         Iterable<String> iterables = uriComputer.getOrComputeLocation(value);
         for(String frag : iterables) {
-            builder.append(frag);
-            builder.append('/');
+            append(frag);
+            append('/');
         }
     }
 
-    void serializeListValue(List<?> value) {
-        builder.append('[');
+    private void serializeListValue(List<?> value) {
+        append('[');
         for(Object v : value) {
             serializeValue(v);
-            builder.append(',');
+            append(',');
         }
-        builder.append(']');
+        append(']');
     }
 
-    void serializeFeatureMap(FeatureMap featureMap) {
-        builder.append("{<");
+    private void serializeFeatureMap(FeatureMap featureMap) {
+        append("{<");
         for(FeatureMap.Entry entry : featureMap) {
-            builder.append(entry.getEStructuralFeature().getName());
-            builder.append("->");
+            append(entry.getEStructuralFeature().getName());
+            append("->");
             serializeValue(entry.getValue());
-            builder.append(',');
+            append(',');
         }
-        builder.append(">}");
+        append(">}");
     }
 
-    void serializeEnumValue(Enumerator value) {
-        builder.append(((EEnumLiteral)value).getLiteral());
+    private void serializeEnumValue(Enumerator value) {
+        append(((EEnumLiteral)value).getLiteral());
     }
 
-    void serializeValue(Object value) {
+    private void serializeValue(Object value) {
         if(value instanceof Enumerator) {
             serializeEnumValue((Enumerator) value);
         } else if(value instanceof FeatureMap) {
@@ -110,38 +157,38 @@ public class ElementIHasher {
         }
     }
 
-    void serializeEValue(Object value) {
+    private void serializeEValue(Object value) {
         if (value instanceof EList) {
-            builder.append('[');
+            append('[');
             for (Object v : (EList<?>) value) {
                 serializeReferencedEObject((EObject) v);
-                builder.append(',');
+                append(',');
             }
-            builder.append(']');
+            append(']');
         } else if (value instanceof EObject) {
             serializeReferencedEObject((EObject) value);
         }
     }
 
-    void serializeEObject(EObject value) {
-        builder.append('{');
+    private void serializeEObject(EObject value) {
+        append('{');
         EClass clazz = value.eClass();
         for(EStructuralFeature feature : clazz.getEAllStructuralFeatures()) {
             if(value.eIsSet(feature)==false) continue;
             Object val = value.eGet(feature);
             if(feature instanceof EReference) {
                 if(((EReference)feature).isContainment() == false) {
-                    builder.append(feature.getName());
-                    builder.append(':');
+                    append(feature.getName());
+                    append(':');
                     serializeEValue(val);
                 }
             } else {
-                builder.append(feature.getName());
-                builder.append(':');
+                append(feature.getName());
+                append(':');
                 serializeValue(val);
             }
-            builder.append(',');
+            append(',');
         }
-        builder.append('}');
+        append('}');
     }
 }

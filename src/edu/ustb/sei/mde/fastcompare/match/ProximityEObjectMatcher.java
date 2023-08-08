@@ -6,12 +6,16 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import edu.ustb.sei.mde.fastcompare.config.Hasher;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.index.ByTypeIndex;
+import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapter;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex.Side;
+import edu.ustb.sei.mde.fastcompare.shash.Hash64;
 import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +60,8 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	 */
 	private Map<EObject, Side> eObjectsToSide = Maps.newHashMap();
 
+	private MatcherConfigure configure;
+
 	/**
 	 * Create the matcher using the given distance function.
 	 * 
@@ -64,6 +70,76 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	 */
 	public ProximityEObjectMatcher(MatcherConfigure configure) {
 		this.index = new ByTypeIndex(this, configure);
+		this.configure = configure;
+	}
+
+	private Set<EObject> buildIndex(Iterator<? extends EObject> objects, Side side) {
+		ElementIndexAdapter.reset();
+		Set<EObject> roots = new HashSet<>();
+		// roots
+		while(objects.hasNext()) {
+			EObject next = objects.next();
+			doHash(next);
+			index.index(next, side);
+			eObjectsToSide.put(next, side);
+			if(next.eContainer() == null) roots.add(next);
+		}
+		// build coarse-grained index from roots
+		for(EObject root : roots) {
+			index.buildTreeIndex(root, side);
+		}
+
+		return roots;
+	}
+
+	public void createMatches(Comparison comparison, Iterable<? extends EObject> leftRoots, Iterable<? extends EObject> rightRoots, Iterable<? extends EObject> originalRoots) {
+		buildIndex(leftRoots, Side.LEFT);
+		buildIndex(rightRoots, Side.RIGHT);
+		buildIndex(originalRoots, Side.ORIGIN);
+
+		// top-down match
+
+		// unmatch others
+	}
+
+
+	/**
+	 * Build index from roots
+	 * @param roots
+	 * @param side
+	 */
+	private void buildIndex(Iterable<? extends EObject> roots, Side side) {
+		ElementIndexAdapter.reset();
+		for(EObject root : roots) {
+			buildIndex(root, side);
+		}
+	}
+
+	private ElementIndexAdapter buildIndex(EObject root, Side side) {
+		ElementIndexAdapter adapter = doHash(root);
+		index.index(root, side);
+		eObjectsToSide.put(root, side);
+		int maxDepth = 0;
+		for(EObject child : root.eContents()) {
+			ElementIndexAdapter cAdapter = buildIndex(child, side);
+			if(maxDepth < cAdapter.depth) maxDepth = cAdapter.depth;
+		}
+		adapter.depth = maxDepth + 1;
+		return adapter;
+	}
+
+	private ElementIndexAdapter doHash(EObject next) {
+		ElementIndexAdapter adapter = ElementIndexAdapter.equip(next);
+		Hasher hasher = configure.getElementHasher();
+		if(configure.shouldDoSimHash(next.eClass())) {
+			adapter.similarityHash = hasher.computeSHash(next);
+		} else 
+			adapter.similarityHash = Hash64.ZERO_HASH;
+		
+		if(configure.isUsingIdentityHash())
+			adapter.localIdentityHash = hasher.computeIHash(next);
+
+		return adapter;
 	}
 
 	/**
@@ -75,6 +151,10 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		if (!leftEObjects.hasNext() && !rightEObjects.hasNext() && !originEObjects.hasNext()) {
 			return;
 		}
+		
+		Set<EObject> leftRoots = buildIndex(leftEObjects, Side.LEFT);
+		Set<EObject> rightRotos = buildIndex(rightEObjects, Side.RIGHT);
+		Set<EObject> originalRoots = buildIndex(originEObjects, Side.ORIGIN);
 
 		// int nbElements = 0;
 		// int lastSegment = 0;
@@ -82,30 +162,29 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		 * We are iterating through the three sides of the scope at the same time so that index might apply
 		 * pre-matching strategies elements if they wish.
 		 */
-		while (leftEObjects.hasNext() || rightEObjects.hasNext() || originEObjects.hasNext()) {
-			if (leftEObjects.hasNext()) {
-				EObject next = leftEObjects.next();
-				// nbElements++;
-				index.index(next, Side.LEFT);
-				eObjectsToSide.put(next, Side.LEFT);
-			}
+		// while (leftEObjects.hasNext() || rightEObjects.hasNext() || originEObjects.hasNext()) {
+		// 	if (leftEObjects.hasNext()) {
+		// 		EObject next = leftEObjects.next();
+		// 		index.index(next, Side.LEFT);
+		// 		eObjectsToSide.put(next, Side.LEFT);
+		// 	}
 
-			if (rightEObjects.hasNext()) {
-				EObject next = rightEObjects.next();
-				index.index(next, Side.RIGHT);
-				eObjectsToSide.put(next, Side.RIGHT);
-			}
+		// 	if (rightEObjects.hasNext()) {
+		// 		EObject next = rightEObjects.next();
+		// 		index.index(next, Side.RIGHT);
+		// 		eObjectsToSide.put(next, Side.RIGHT);
+		// 	}
 
-			if (originEObjects.hasNext()) {
-				EObject next = originEObjects.next();
-				index.index(next, Side.ORIGIN);
-				eObjectsToSide.put(next, Side.ORIGIN);
-			}
-			// if (nbElements / NB_ELEMENTS_BETWEEN_MATCH_AHEAD > lastSegment) {
-			// 	matchAheadOfTime(comparison);
-			// 	lastSegment++;
-			// }
-		}
+		// 	if (originEObjects.hasNext()) {
+		// 		EObject next = originEObjects.next();
+		// 		index.index(next, Side.ORIGIN);
+		// 		eObjectsToSide.put(next, Side.ORIGIN);
+		// 	}
+		// 	// if (nbElements / NB_ELEMENTS_BETWEEN_MATCH_AHEAD > lastSegment) {
+		// 	// 	matchAheadOfTime(comparison);
+		// 	// 	lastSegment++;
+		// 	// }
+		// }
 
 		matchIndexedObjects(comparison);
 
@@ -188,10 +267,10 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	 *            a monitor to track progress.
 	 * @return the list of EObjects which could not be processed for some reason.
 	 */
-	private Iterable<EObject> matchList(Comparison comparison, Iterable<EObject> todoList,
-			boolean createUnmatches) {
+	private Iterable<EObject> matchList(Comparison comparison, Iterable<EObject> todoList, boolean createUnmatches) {
 		Set<EObject> remainingResult = Sets.newLinkedHashSet();
 		List<EObject> requiredContainers = Lists.newArrayList();
+
 		Iterator<EObject> todo = todoList.iterator();
 		while (todo.hasNext()) {
 			EObject next = todo.next();
@@ -206,15 +285,16 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 				container = container.eContainer();
 			}
 		}
-		Iterator<EObject> containersAndTodo = Iterators.concat(requiredContainers.iterator(),
-				todoList.iterator());
+
+		Iterator<EObject> containersAndTodo = Iterators.concat(requiredContainers.iterator(), todoList.iterator());
 		while (containersAndTodo.hasNext()) {
 			EObject next = containersAndTodo.next();
 			/*
 			 * At this point you need to be sure the element has not been matched in any other way before.
 			 */
-			if (!MatchUtil.isFullyMatched(next, comparison)) {
-				if (!tryToMatch(comparison, next, createUnmatches)) {
+			Match match = MatchUtil.getMatch(next, comparison);
+			if (!MatchUtil.isFullMatch(match)) {
+				if (!tryToMatch(comparison, next, match, createUnmatches)) {
 					remainingResult.add(next);
 				}
 			}
@@ -232,12 +312,13 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	 *            the comparison under construction, it will be updated with the new match.
 	 * @param a
 	 *            object to match.
+	 * @param partialMatch
 	 * @param createUnmatches
 	 *            whether elements which have no match should trigger the creation of a Match object (meaning
 	 *            we won't try to match them afterwards) or not.
 	 * @return false if the conditions are not fulfilled to create the match, true otherwhise.
 	 */
-	private boolean tryToMatch(Comparison comparison, EObject a, boolean createUnmatches) {
+	private boolean tryToMatch(Comparison comparison, EObject a, Match partialMatch, boolean createUnmatches) {
 		boolean okToMatch;
 		Side aSide = eObjectsToSide.get(a);
 		assert aSide != null;
@@ -258,33 +339,34 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		assert cSide != aSide;
 
 		// sub-tree match
-		coarseGainedMatch(comparison, a, aSide, bSide, cSide);
+		coarseGainedMatch(comparison, partialMatch, a, aSide, bSide, cSide);
 
 		// fine-gained matching
-		okToMatch = fineGainedMatch(comparison, a, aSide, bSide, cSide, createUnmatches);
+		okToMatch = fineGainedMatch(comparison, partialMatch, a, aSide, bSide, cSide, createUnmatches);
 		
 		return okToMatch;
 	}
 
-	private void coarseGainedMatch(Comparison comparison, EObject a, Side aSide, Side bSide, Side cSide) {
-
+	private void coarseGainedMatch(Comparison comparison, Match partialMatch, EObject a, Side aSide, Side bSide, Side cSide) {
+		// find subtrees in bSide and cSide
+		// if bSubtree == null && cSubtree == null, then do nothing
+		// if bSubtree != null && cSubtree == null, then Match.a = aSubtree, Match.b = bSubtree, Match.c = PSEUDO
+		// if bSubtree == null && cSubtree != null, then Match.a = aSubtree, Match.b = PSEUDO, Match.c = cSubtree
+		// if bSubtree != null && cSubtree != null, then Match.a = aSubtree, Match.b = bSubtree, Match.c = cSubtree, remove all from index
 	}
 
-	private boolean fineGainedMatch(Comparison comparison, EObject a, Side aSide, Side bSide, Side cSide, boolean createUnmatches) {
+	private boolean fineGainedMatch(Comparison comparison, Match partialMatch, EObject a, Side aSide, Side bSide, Side cSide, boolean createUnmatches) {
 		boolean okToMatch = false;
-		Match partialMatch = MatchUtil.getMatch(a, comparison);
 		Map<Side, EObject> closests = index.findClosests(comparison, a, aSide);
 		if (closests != null) {
 			EObject lObj = closests.get(bSide);
 			EObject aObj = closests.get(cSide);
 			if (lObj != null || aObj != null) {
 				// we have at least one other match
-				areMatching(comparison, closests.get(Side.LEFT), closests.get(Side.RIGHT),
-						closests.get(Side.ORIGIN), partialMatch);
+				areMatching(comparison, closests.get(Side.LEFT), closests.get(Side.RIGHT), closests.get(Side.ORIGIN), partialMatch);
 				okToMatch = true;
 			} else if (createUnmatches) {
-				areMatching(comparison, closests.get(Side.LEFT), closests.get(Side.RIGHT),
-						closests.get(Side.ORIGIN), partialMatch);
+				areMatching(comparison, closests.get(Side.LEFT), closests.get(Side.RIGHT), closests.get(Side.ORIGIN), partialMatch);
 				okToMatch = true;
 			}
 		}
@@ -345,9 +427,9 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 			((BasicEList<Match>)comparison.getMatches()).addUnique(result);
 		} else {
 			result = partialMatch;
-			result.setLeft(left);
-			result.setRight(right);
-			result.setOrigin(origin);
+			if(result.getLeft() == MatchUtil.PSEUDO_MATCHED_OBJECT) result.setLeft(left);
+			if(result.getRight() == MatchUtil.PSEUDO_MATCHED_OBJECT) result.setRight(right);
+			if(result.getOrigin() == MatchUtil.PSEUDO_MATCHED_OBJECT) result.setOrigin(origin);
 		}
 
 		if (left != null) {

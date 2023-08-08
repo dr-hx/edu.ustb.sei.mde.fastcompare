@@ -62,7 +62,8 @@ public class ProximityIndex implements ObjectIndex {
 	protected boolean readyForThisTest(Comparison inProgress, EObject fastCheck) {
 		EObject eContainer = fastCheck.eContainer();
 		if (eContainer != null && scope.isInScope(eContainer)) {
-			return inProgress.getMatch(eContainer) != null;
+			Match match =  inProgress.getMatch(eContainer);
+			return MatchUtil.isFullMatch(match);
 		}
 		return true;
 	}
@@ -124,11 +125,11 @@ public class ProximityIndex implements ObjectIndex {
 			} else {
 				EObject closestLeft;
 				if(partialMatch.getLeft() == MatchUtil.PSEUDO_MATCHED_OBJECT)
-					closestLeft = findTheClosest(inProgress, eObj, Side.RIGHT, Side.LEFT, true);
+					closestLeft = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.LEFT, true);
 				else closestLeft = partialMatch.getLeft();
 				EObject closestRight;
 				if(partialMatch.getRight() == MatchUtil.PSEUDO_MATCHED_OBJECT) 
-					closestRight = findTheClosest(inProgress, eObj, Side.LEFT, Side.RIGHT, true);
+					closestRight = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.RIGHT, true);
 				else closestRight = partialMatch.getRight();
 				result.put(Side.LEFT, closestLeft);
 				result.put(Side.RIGHT, closestRight);
@@ -283,6 +284,24 @@ public class ProximityIndex implements ObjectIndex {
 			}
 			case ORIGIN: {
 				origin.index(eObj);
+				break;
+			}
+		}
+	}
+
+	@Override
+	public void buildTreeIndex(EObject root, Side side) {
+		switch(side) {
+			case LEFT: {
+				left.indexTree(root);
+				break;
+			}
+			case RIGHT: {
+				right.indexTree(root);
+				break;
+			}
+			case ORIGIN: {
+				origin.indexTree(root);
 				break;
 			}
 		}

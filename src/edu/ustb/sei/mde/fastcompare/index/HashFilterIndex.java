@@ -19,6 +19,7 @@ import edu.ustb.sei.mde.fastcompare.utils.CommonUtils;
 
 public class HashFilterIndex implements ObjectFilterIndex {
     private Map<Long, Set<EObject>> integrityMap;
+    private Map<Long, Set<EObject>> subtreeIntegrityMap;
     private Map<Hash64, Set<EObject>> similarityMap;
     private Set<EObject> allObjects;
     private final Function<EObject, Double> computeThresholdAmount;
@@ -27,8 +28,10 @@ public class HashFilterIndex implements ObjectFilterIndex {
     public HashFilterIndex(MatcherConfigure configure) {
         if(configure.isUsingIdentityHash()) {
             integrityMap = null;
+            subtreeIntegrityMap = null;
         } else {
             integrityMap = new HashMap<>();
+            subtreeIntegrityMap = new HashMap<>();
         }
         similarityMap = new HashMap<>();
         allObjects = ObjectFilterIndex.createSet(null);
@@ -114,5 +117,24 @@ public class HashFilterIndex implements ObjectFilterIndex {
         }
         list = similarityMap.computeIfAbsent(adapter.similarityHash, ObjectFilterIndex::createSet);
         list.add(eObj);
+    }
+
+
+    @Override
+    public void indexTree(EObject root) {
+        if(subtreeIntegrityMap != null) {
+            addToSubtreeIndexMap(root);
+            root.eAllContents().forEachRemaining(c->{
+                addToSubtreeIndexMap(c);
+            });
+        }
+    }
+
+
+    private void addToSubtreeIndexMap(EObject root) {
+        ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(root);
+        Long key = adapter.getSubtreeIdentityHash();
+        Set<EObject> set = subtreeIntegrityMap.computeIfAbsent(key, ObjectFilterIndex::createSet);
+        set.add(root);
     }
 }
