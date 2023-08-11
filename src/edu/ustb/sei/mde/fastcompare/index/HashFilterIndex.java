@@ -2,6 +2,8 @@ package edu.ustb.sei.mde.fastcompare.index;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
@@ -10,16 +12,18 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 
 import org.eclipse.emf.compare.Comparison;
+import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.shash.Hash64;
 import edu.ustb.sei.mde.fastcompare.utils.CommonUtils;
+import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
 
 public class HashFilterIndex implements ObjectFilterIndex {
     private Map<Long, Set<EObject>> integrityMap;
-    private Map<Long, Set<EObject>> subtreeIntegrityMap;
+    // private Map<Long, Set<EObject>> subtreeIntegrityMap;
     private Map<Hash64, Set<EObject>> similarityMap;
     private Set<EObject> allObjects;
     private final Function<EObject, Double> computeThresholdAmount;
@@ -27,12 +31,15 @@ public class HashFilterIndex implements ObjectFilterIndex {
 
     public HashFilterIndex(MatcherConfigure configure) {
         if(configure.isUsingIdentityHash()) {
-            integrityMap = null;
-            subtreeIntegrityMap = null;
-        } else {
             integrityMap = new HashMap<>();
-            subtreeIntegrityMap = new HashMap<>();
+        } else {
+            integrityMap = null;
         }
+        // if(configure.isUsingSubtreeHash()) {
+        //     subtreeIntegrityMap = new HashMap<>();
+        // } else {
+        //     subtreeIntegrityMap = null;
+        // }
         similarityMap = new HashMap<>();
         allObjects = ObjectFilterIndex.createSet(null);
         this.matcherConfigure = configure;
@@ -99,42 +106,34 @@ public class HashFilterIndex implements ObjectFilterIndex {
         ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(eObj);
         allObjects.remove(eObj);
         Set<EObject> list;
-        if(integrityMap!=null) {
+        if (integrityMap != null) {
             list = integrityMap.get(adapter.localIdentityHash);
-            if(list!=null) list.remove(eObj);
+            if (list != null)
+                list.remove(eObj);
         }
+        // TODO: we may not have to remove it
+        // TODO: if we have to do so, we must remove recursively
+        // if (subtreeIntegrityMap != null) {
+        //     // we also have to remove the tree rooting at eObj from the index
+        //     list = subtreeIntegrityMap.get(adapter.getSubtreeIdentityHash());
+        //     if (list != null)
+        //         list.remove(eObj);
+        // }
         list = similarityMap.get(adapter.similarityHash);
-        if(list!=null) list.remove(eObj);
+        if (list != null)
+            list.remove(eObj);
     }
 
     public void index(EObject eObj) {
         ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(eObj);
+        
         allObjects.add(eObj);
         Set<EObject> list;
-        if(integrityMap!=null) {
+        if(integrityMap != null) {
             list = integrityMap.computeIfAbsent(adapter.localIdentityHash, ObjectFilterIndex::createSet);
             list.add(eObj);
         }
         list = similarityMap.computeIfAbsent(adapter.similarityHash, ObjectFilterIndex::createSet);
         list.add(eObj);
-    }
-
-
-    @Override
-    public void indexTree(EObject root) {
-        if(subtreeIntegrityMap != null) {
-            addToSubtreeIndexMap(root);
-            root.eAllContents().forEachRemaining(c->{
-                addToSubtreeIndexMap(c);
-            });
-        }
-    }
-
-
-    private void addToSubtreeIndexMap(EObject root) {
-        ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(root);
-        Long key = adapter.getSubtreeIdentityHash();
-        Set<EObject> set = subtreeIntegrityMap.computeIfAbsent(key, ObjectFilterIndex::createSet);
-        set.add(root);
     }
 }

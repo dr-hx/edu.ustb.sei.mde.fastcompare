@@ -1,5 +1,6 @@
 package edu.ustb.sei.mde.fastcompare.index;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.SortedMap;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
+import org.eclipse.emf.compare.CompareFactory;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.ecore.EObject;
@@ -21,22 +23,24 @@ import edu.ustb.sei.mde.fastcompare.match.CachingDistanceFunction;
 import edu.ustb.sei.mde.fastcompare.match.CachingDistanceFunctionEx;
 import edu.ustb.sei.mde.fastcompare.match.ScopeQuery;
 import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
+import edu.ustb.sei.mde.fastcompare.utils.Triple;
 
 public class ProximityIndex implements ObjectIndex {
-    final private ScopeQuery scope;
-    final private MatcherConfigure matcherConfigure;
+	final private ScopeQuery scope;
+	final private MatcherConfigure matcherConfigure;
 	final CachingDistanceFunction meter;
 	final Hasher hasher;
 
-    final ObjectFilterIndex left;
-    final ObjectFilterIndex right;
-    final ObjectFilterIndex origin;
-	
-    public ProximityIndex(ScopeQuery scope, MatcherConfigure matcherConfigure, Function<MatcherConfigure, ObjectFilterIndex> creator) {
+	final ObjectFilterIndex left;
+	final ObjectFilterIndex right;
+	final ObjectFilterIndex origin;
+
+	public ProximityIndex(ScopeQuery scope, MatcherConfigure matcherConfigure,
+			Function<MatcherConfigure, ObjectFilterIndex> creator) {
 		this.scope = scope;
 		this.matcherConfigure = matcherConfigure;
 
-		if(matcherConfigure.isUsingIdentityHash()) {
+		if (matcherConfigure.isUsingIdentityHash()) {
 			this.meter = new CachingDistanceFunctionEx(matcherConfigure.getDistanceFunction());
 		} else {
 			this.meter = new CachingDistanceFunction(matcherConfigure.getDistanceFunction());
@@ -44,103 +48,147 @@ public class ProximityIndex implements ObjectIndex {
 
 		this.hasher = matcherConfigure.getElementHasher();
 
-        this.left = creator.apply(matcherConfigure);
-        this.right = creator.apply(matcherConfigure);
-        this.origin = creator.apply(matcherConfigure);
+		this.left = creator.apply(matcherConfigure);
+		this.right = creator.apply(matcherConfigure);
+		this.origin = creator.apply(matcherConfigure);
 	}
 
 	@Override
 	public Iterable<EObject> getValuesStillThere(Side side) {
-		switch(side) {
-			case LEFT: return left.allCandidates();
-			case RIGHT: return right.allCandidates();
-			case ORIGIN: return origin.allCandidates();
-			default: return Collections.emptyList();
+		switch (side) {
+			case LEFT:
+				return left.allCandidates();
+			case RIGHT:
+				return right.allCandidates();
+			case ORIGIN:
+				return origin.allCandidates();
+			default:
+				return Collections.emptyList();
 		}
 	}
 
+	/**
+	 * In this method, we cache the match of fastCheck.eContainer.
+	 * Becareful, we must avoid using it when we do not want to cache the result.
+	 * 
+	 * @param inProgress
+	 * @param fastCheck
+	 * @return
+	 */
 	protected boolean readyForThisTest(Comparison inProgress, EObject fastCheck) {
 		EObject eContainer = fastCheck.eContainer();
 		if (eContainer != null && scope.isInScope(eContainer)) {
-			Match match =  inProgress.getMatch(eContainer);
-			return MatchUtil.isFullMatch(match);
+			Match match = MatchUtil.getMatch(eContainer, inProgress);
+			return match != null;
+		}
+		return true;
+	}
+
+	protected boolean readyForThisTestWithoutCache(Comparison inProgress, EObject fastCheck) {
+		EObject eContainer = fastCheck.eContainer();
+		if (eContainer != null && scope.isInScope(eContainer)) {
+			Match match = inProgress.getMatch(eContainer);
+			return match != null;
 		}
 		return true;
 	}
 
 	@Override
-	public Map<Side, EObject> findClosests(Comparison inProgress, EObject eObj, Side passedObjectSide) {
-		// findClosests must be able to handle partial match
-		// For partial match, there may exist a match for eObj in which not all the sides are determined.
+	public Match findIdenticalSubtrees(Comparison inProgress, EObject eObj, Side passedObjectSide,
+			Match partialMatchOfEObj, Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
+		// we cache the match of eObj.eContainer!
+		// it is expected to be used in findTheIdenticalSubtree
 		if (!readyForThisTest(inProgress, eObj)) {
-			return null;
+			return partialMatchOfEObj;
 		}
 
-		Match partialMatch = MatchUtil.getMatch(eObj, inProgress);
+		Match resultMatch = null;
 
-		Map<Side, EObject> result = new HashMap<Side, EObject>(3);
-		result.put(passedObjectSide, eObj);
 		if (passedObjectSide == Side.LEFT) {
-			if(partialMatch == null) {
-				EObject closestRight = findTheClosest(inProgress, eObj, Side.LEFT, Side.RIGHT, true);
-				EObject closestOrigin = findTheClosest(inProgress, eObj, Side.LEFT, Side.ORIGIN, true);
-				result.put(Side.RIGHT, closestRight);
-				result.put(Side.ORIGIN, closestOrigin);
-			} else {
-				EObject closestRight;
-				if(partialMatch.getRight() == MatchUtil.PSEUDO_MATCHED_OBJECT) 
-					closestRight = findTheClosest(inProgress, eObj, Side.LEFT, Side.RIGHT, true);
-				else closestRight = partialMatch.getRight();
-				EObject closestOrigin;
-				if(partialMatch.getOrigin() == MatchUtil.PSEUDO_MATCHED_OBJECT) 
-					closestOrigin = findTheClosest(inProgress, eObj, Side.LEFT, Side.ORIGIN, true);
-				else closestOrigin = partialMatch.getOrigin();
-				result.put(Side.RIGHT, closestRight);
-				result.put(Side.ORIGIN, closestOrigin);
-			}
+			resultMatch = findTheIdenticalSubtree(inProgress, eObj, Side.LEFT, Side.RIGHT, partialMatchOfEObj, roots.right);
+			resultMatch = findTheIdenticalSubtree(inProgress, eObj, Side.LEFT, Side.ORIGIN, resultMatch, roots.origin);
 		} else if (passedObjectSide == Side.RIGHT) {
-			if(partialMatch == null) {
-				EObject closestLeft = findTheClosest(inProgress, eObj, Side.RIGHT, Side.LEFT, true);
-				EObject closestOrigin = findTheClosest(inProgress, eObj, Side.RIGHT, Side.ORIGIN, true);
-				result.put(Side.LEFT, closestLeft);
-				result.put(Side.ORIGIN, closestOrigin);
-			} else {
-				EObject closestLeft;
-				if(partialMatch.getLeft() == MatchUtil.PSEUDO_MATCHED_OBJECT)
-					closestLeft = findTheClosest(inProgress, eObj, Side.RIGHT, Side.LEFT, true);
-				else closestLeft = partialMatch.getLeft();
-				EObject closestOrigin;
-				if(partialMatch.getOrigin() == MatchUtil.PSEUDO_MATCHED_OBJECT)
-					closestOrigin = findTheClosest(inProgress, eObj, Side.RIGHT, Side.ORIGIN, true);
-				else closestOrigin = partialMatch.getOrigin();
-				result.put(Side.LEFT, closestLeft);
-				result.put(Side.ORIGIN, closestOrigin);
-			}
+			resultMatch = findTheIdenticalSubtree(inProgress, eObj, Side.RIGHT, Side.LEFT, partialMatchOfEObj, roots.left);
+			resultMatch = findTheIdenticalSubtree(inProgress, eObj, Side.RIGHT, Side.ORIGIN, resultMatch, roots.origin);
 		} else if (passedObjectSide == Side.ORIGIN) {
-			if(partialMatch == null) {
-				EObject closestLeft = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.LEFT, true);
-				EObject closestRight = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.RIGHT, true);
-				result.put(Side.LEFT, closestLeft);
-				result.put(Side.RIGHT, closestRight);
-			} else {
-				EObject closestLeft;
-				if(partialMatch.getLeft() == MatchUtil.PSEUDO_MATCHED_OBJECT)
-					closestLeft = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.LEFT, true);
-				else closestLeft = partialMatch.getLeft();
-				EObject closestRight;
-				if(partialMatch.getRight() == MatchUtil.PSEUDO_MATCHED_OBJECT) 
-					closestRight = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.RIGHT, true);
-				else closestRight = partialMatch.getRight();
-				result.put(Side.LEFT, closestLeft);
-				result.put(Side.RIGHT, closestRight);
-			}
+			resultMatch = findTheIdenticalSubtree(inProgress, eObj, Side.ORIGIN, Side.LEFT, partialMatchOfEObj, roots.left);
+			resultMatch = findTheIdenticalSubtree(inProgress, eObj, Side.ORIGIN, Side.RIGHT, resultMatch, roots.right);
 		}
-		
-		return result;
+
+		return resultMatch;
 	}
 
-	private EObject findTheClosest(Comparison inProgress, EObject eObj, Side eObjSide, Side sideToFind, boolean shouldDoubleCheck) {
-		ObjectFilterIndex storageToSearchFor = left;
+	private Match findTheIdenticalSubtree(final Comparison inProgress, final EObject eObj, final Side eObjSide,
+			final Side sideToFind, final Match partialMatch, final Iterable<EObject> candRoots) {
+		// skip if the partial match has the match of the sideToFind
+		if(partialMatch != null && MatchUtil.isMatched(partialMatch, sideToFind)) 
+			return partialMatch;
+
+		final EObject eContainer = eObj.eContainer();
+		// we expect to hit the cache of the container match
+		final Match containerMatch = MatchUtil.getMatch(eContainer, inProgress);
+		assert containerMatch != null;
+
+		EObject matchedContainer = null;
+		matchedContainer = MatchUtil.getMatchedObject(containerMatch, sideToFind);
+		Iterable<EObject> candidates = null;
+
+		if (matchedContainer == null) {
+			if (eContainer == null) {
+				// try roots
+				candidates = candRoots;
+			} else {
+				return partialMatch;
+			}
+		} else {
+			candidates = matchedContainer.eContents();
+		}
+
+		// search in candidates
+		return findIdenticalSubtree(inProgress, eObj, eObjSide, sideToFind, partialMatch, candidates);
+	}
+
+	private Match findIdenticalSubtree(Comparison inProgress, EObject eObj, Side passedObjectSide, Side sideToFind, Match partialMatch,
+			Iterable<EObject> candidates) {
+		ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(eObj);
+		final int depth = adapter.depth;
+		final long subtreeKey = adapter.getSubtreeIdentityHash();
+
+		if (partialMatch == null) {
+			for (EObject cand : candidates) {
+				ElementIndexAdapter cAdapter = ElementIndexAdapter.getAdapter(cand);
+				if (depth == cAdapter.depth && cAdapter.getSubtreeIdentityHash() == subtreeKey) {
+					Match cMatch = inProgress.getMatch(cand);
+					// we probably have to consider the containment position in the future
+					if (cMatch == null) {
+						partialMatch = CompareFactory.eINSTANCE.createMatch();
+						MatchUtil.setMatch(partialMatch, eObj, passedObjectSide);
+						MatchUtil.setMatch(partialMatch, cand, sideToFind);
+						return partialMatch;
+					} else if (MatchUtil.tryFillMatched(cMatch, eObj, passedObjectSide)) {
+						return cMatch;
+					}
+				}
+			}
+		} else {
+			for (EObject cand : candidates) {
+				ElementIndexAdapter cAdapter = ElementIndexAdapter.getAdapter(cand);
+				if (depth == cAdapter.depth && cAdapter.getSubtreeIdentityHash() == subtreeKey) {
+					Match cMatch = inProgress.getMatch(cand);
+					// we probably have to consider the containment position in the future
+					if (cMatch == null) {
+						MatchUtil.setMatch(partialMatch, cand, sideToFind);
+						return cMatch;
+					}
+				}
+			}
+		}
+
+		return partialMatch;
+	}
+
+	private ObjectFilterIndex getStorageToSearchFor(final Side sideToFind) {
+		final ObjectFilterIndex storageToSearchFor;
 		switch (sideToFind) {
 			case RIGHT:
 				storageToSearchFor = right;
@@ -152,12 +200,102 @@ public class ProximityIndex implements ObjectIndex {
 				storageToSearchFor = origin;
 				break;
 			default:
+				storageToSearchFor = left;
 				break;
 		}
+		return storageToSearchFor;
+	}
+
+	@Override
+	public Map<Side, EObject> findClosests(Comparison inProgress, EObject eObj, Side passedObjectSide,
+			Match partialMatchOfEObj) {
+		// findClosests must be able to handle partial match
+		// For partial match, there may exist a match for eObj in which not all the
+		// sides are determined.
+		// we cache the match of eObj.eContainer!
+		if (!readyForThisTest(inProgress, eObj)) {
+			return null;
+		}
+
+		// At this point, eObj may have a partial match. We must complete the matching
+		// process.
+
+		Map<Side, EObject> result = new HashMap<Side, EObject>(3);
+		result.put(passedObjectSide, eObj);
+
+		// compete partial match
+		if (passedObjectSide == Side.LEFT) {
+			if (partialMatchOfEObj == null) {
+				EObject closestRight = findTheClosest(inProgress, eObj, Side.LEFT, Side.RIGHT, true);
+				EObject closestOrigin = findTheClosest(inProgress, eObj, Side.LEFT, Side.ORIGIN, true);
+				result.put(Side.RIGHT, closestRight);
+				result.put(Side.ORIGIN, closestOrigin);
+			} else {
+				EObject closestRight;
+				if (partialMatchOfEObj.getRight() == MatchUtil.PSEUDO_MATCHED_OBJECT)
+					closestRight = findTheClosest(inProgress, eObj, Side.LEFT, Side.RIGHT, true);
+				else
+					closestRight = partialMatchOfEObj.getRight();
+				EObject closestOrigin;
+				if (partialMatchOfEObj.getOrigin() == MatchUtil.PSEUDO_MATCHED_OBJECT)
+					closestOrigin = findTheClosest(inProgress, eObj, Side.LEFT, Side.ORIGIN, true);
+				else
+					closestOrigin = partialMatchOfEObj.getOrigin();
+				result.put(Side.RIGHT, closestRight);
+				result.put(Side.ORIGIN, closestOrigin);
+			}
+		} else if (passedObjectSide == Side.RIGHT) {
+			if (partialMatchOfEObj == null) {
+				EObject closestLeft = findTheClosest(inProgress, eObj, Side.RIGHT, Side.LEFT, true);
+				EObject closestOrigin = findTheClosest(inProgress, eObj, Side.RIGHT, Side.ORIGIN, true);
+				result.put(Side.LEFT, closestLeft);
+				result.put(Side.ORIGIN, closestOrigin);
+			} else {
+				EObject closestLeft;
+				if (partialMatchOfEObj.getLeft() == MatchUtil.PSEUDO_MATCHED_OBJECT)
+					closestLeft = findTheClosest(inProgress, eObj, Side.RIGHT, Side.LEFT, true);
+				else
+					closestLeft = partialMatchOfEObj.getLeft();
+				EObject closestOrigin;
+				if (partialMatchOfEObj.getOrigin() == MatchUtil.PSEUDO_MATCHED_OBJECT)
+					closestOrigin = findTheClosest(inProgress, eObj, Side.RIGHT, Side.ORIGIN, true);
+				else
+					closestOrigin = partialMatchOfEObj.getOrigin();
+				result.put(Side.LEFT, closestLeft);
+				result.put(Side.ORIGIN, closestOrigin);
+			}
+		} else if (passedObjectSide == Side.ORIGIN) {
+			if (partialMatchOfEObj == null) {
+				EObject closestLeft = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.LEFT, true);
+				EObject closestRight = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.RIGHT, true);
+				result.put(Side.LEFT, closestLeft);
+				result.put(Side.RIGHT, closestRight);
+			} else {
+				EObject closestLeft;
+				if (partialMatchOfEObj.getLeft() == MatchUtil.PSEUDO_MATCHED_OBJECT)
+					closestLeft = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.LEFT, true);
+				else
+					closestLeft = partialMatchOfEObj.getLeft();
+				EObject closestRight;
+				if (partialMatchOfEObj.getRight() == MatchUtil.PSEUDO_MATCHED_OBJECT)
+					closestRight = findTheClosest(inProgress, eObj, Side.ORIGIN, Side.RIGHT, true);
+				else
+					closestRight = partialMatchOfEObj.getRight();
+				result.put(Side.LEFT, closestLeft);
+				result.put(Side.RIGHT, closestRight);
+			}
+		}
+		// At this point, result should not contain PSEUDO MATCH
+		return result;
+	}
+
+	private EObject findTheClosest(Comparison inProgress, final EObject eObj, final Side eObjSide,
+			final Side sideToFind, final boolean shouldDoubleCheck) {
+		final ObjectFilterIndex storageToSearchFor = getStorageToSearchFor(sideToFind);
 
 		Iterable<EObject> cand = storageToSearchFor.filterCandidates(inProgress, eObj, null, 1.0);
 		for (EObject fastCheck : cand) {
-			if (!readyForThisTest(inProgress, fastCheck)) {
+			if (!readyForThisTestWithoutCache(inProgress, fastCheck)) {
 			} else {
 				if (meter.areIdentic(inProgress, eObj, fastCheck)) {
 					return fastCheck;
@@ -165,51 +303,45 @@ public class ProximityIndex implements ObjectIndex {
 			}
 		}
 
-		Match containerMatch = getPreviousMatch(eObj.eContainer(), inProgress);
+		// we expect to hit the cache of the container match
+		// but it will not happen during double check, so we decide to the use a plain
+		// get here
+		Match containerMatch = getContainerMatch(eObj, inProgress);
 
 		SortedMap<Double, EObject> candidates = Maps.newTreeMap();
 		double minSim = getMinSim(eObj);
 		boolean canCache = true;
-		
+
 		EObject matchedContainer = null;
-		if(containerMatch!=null) {			
-			switch (sideToFind) {
-			case RIGHT:
-				matchedContainer = containerMatch.getRight();
-				break;
-			case LEFT:
-				matchedContainer = containerMatch.getLeft();
-				break;
-			case ORIGIN:
-				matchedContainer = containerMatch.getOrigin();
-				break;
-			default:
-				break; // never happen
-			}
-			if(matchedContainer == MatchUtil.PSEUDO_MATCHED_OBJECT) {
+		if (containerMatch != null) {
+			matchedContainer = MatchUtil.getMatchedObject(containerMatch, sideToFind);
+			if (matchedContainer == MatchUtil.PSEUDO_MATCHED_OBJECT) {
 				throw new RuntimeException("This should not happen!");
 			}
 		} else {
 			canCache = false;
 		}
 
-		Iterable<EObject> cand2 = storageToSearchFor.filterCandidates(inProgress, eObj, Optional.ofNullable(matchedContainer), minSim);
+		Iterable<EObject> cand2 = storageToSearchFor.filterCandidates(inProgress, eObj,
+				Optional.ofNullable(matchedContainer), minSim);
 
 		double bestDistance = Double.MAX_VALUE;
 		EObject bestObject = null;
 
-		if(shouldDoubleCheck) {
+		if (shouldDoubleCheck) {
 			for (EObject potentialClosest : cand2) {
-				double dist = meter.distance(inProgress, eObj, potentialClosest, matchedContainer == potentialClosest.eContainer(), true);
+				double dist = meter.distance(inProgress, eObj, potentialClosest,
+						matchedContainer == potentialClosest.eContainer(), true);
 				if (dist < bestDistance) {
-					candidates.compute(Double.valueOf(dist), (key, existingObject)->{
-						if(existingObject == null) return potentialClosest;
+					candidates.compute(Double.valueOf(dist), (key, existingObject) -> {
+						if (existingObject == null)
+							return potentialClosest;
 						ElementIndexAdapter existingObjectAdapter = ElementIndexAdapter.getAdapter(existingObject);
 						ElementIndexAdapter potentialObjectAdapter = ElementIndexAdapter.getAdapter(potentialClosest);
 						// FIXME: should we use < or >
-						if(existingObjectAdapter.position < potentialObjectAdapter.position) 
+						if (existingObjectAdapter.position < potentialObjectAdapter.position)
 							return existingObject;
-						else 
+						else
 							return potentialClosest;
 					});
 				}
@@ -231,8 +363,9 @@ public class ProximityIndex implements ObjectIndex {
 		} else {
 			for (EObject potentialClosest : cand2) {
 				double dist;
-				dist = meter.distance(inProgress, eObj, potentialClosest, matchedContainer == potentialClosest.eContainer(), canCache);
-				
+				dist = meter.distance(inProgress, eObj, potentialClosest,
+						matchedContainer == potentialClosest.eContainer(), canCache);
+
 				if (dist < bestDistance) {
 					bestDistance = dist;
 					bestObject = potentialClosest;
@@ -248,14 +381,26 @@ public class ProximityIndex implements ObjectIndex {
 		return configure.getSimThreshold();
 	}
 
-	public Match getPreviousMatch(final EObject eObj, Comparison inProgress) {
-		if(eObj==null) return null;
-		else return inProgress.getMatch(eObj);
+	/**
+	 * We do not cache the container match because this method will also be called
+	 * during double check
+	 * in which the cache won't help
+	 * 
+	 * @param eObj
+	 * @param inProgress
+	 * @return
+	 */
+	protected Match getContainerMatch(final EObject eObj, Comparison inProgress) {
+		EObject container = eObj.eContainer();
+		if (container == null)
+			return null;
+		else
+			return inProgress.getMatch(container);
 	}
 
 	@Override
 	public void remove(EObject eObj, Side side) {
-		switch(side) {
+		switch (side) {
 			case LEFT: {
 				left.remove(eObj);
 				break;
@@ -273,7 +418,7 @@ public class ProximityIndex implements ObjectIndex {
 
 	@Override
 	public void index(EObject eObj, Side side) {
-		switch(side) {
+		switch (side) {
 			case LEFT: {
 				left.index(eObj);
 				break;
@@ -289,21 +434,21 @@ public class ProximityIndex implements ObjectIndex {
 		}
 	}
 
-	@Override
-	public void buildTreeIndex(EObject root, Side side) {
-		switch(side) {
-			case LEFT: {
-				left.indexTree(root);
-				break;
-			}
-			case RIGHT: {
-				right.indexTree(root);
-				break;
-			}
-			case ORIGIN: {
-				origin.indexTree(root);
-				break;
-			}
-		}
-	}
+	// @Override
+	// public void indexingSubtrees(EObject root, Side side) {
+	// switch(side) {
+	// case LEFT: {
+	// left.indexingSubtrees(root);
+	// break;
+	// }
+	// case RIGHT: {
+	// right.indexingSubtrees(root);
+	// break;
+	// }
+	// case ORIGIN: {
+	// origin.indexingSubtrees(root);
+	// break;
+	// }
+	// }
+	// }
 }

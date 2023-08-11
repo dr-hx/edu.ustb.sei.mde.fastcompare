@@ -35,8 +35,10 @@ public class NoFilterIndex implements ObjectFilterIndex {
         allObjects.add(eObj);
     }
 
-    @Override
-    public void indexTree(EObject root) {
-    }
+    // @Override
+    // public Set<EObject> getSubtree(Comparison inProgress, EObject eObj, EObject candidateContainer) {
+    //     return null;
+    // }
+
     
 }

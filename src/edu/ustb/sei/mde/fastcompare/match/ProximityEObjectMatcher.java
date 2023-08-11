@@ -10,13 +10,18 @@ import edu.ustb.sei.mde.fastcompare.config.Hasher;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.index.ByTypeIndex;
 import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapter;
+import edu.ustb.sei.mde.fastcompare.index.Indexing;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex.Side;
 import edu.ustb.sei.mde.fastcompare.shash.Hash64;
 import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
+import edu.ustb.sei.mde.fastcompare.utils.Triple;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,9 +78,15 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		this.configure = configure;
 	}
 
+	/**
+	 * Legency code
+	 * @param objects
+	 * @param side
+	 * @return
+	 */
 	private Set<EObject> buildIndex(Iterator<? extends EObject> objects, Side side) {
 		ElementIndexAdapter.reset();
-		Set<EObject> roots = new HashSet<>();
+		Set<EObject> roots = new LinkedHashSet<>();
 		// roots
 		while(objects.hasNext()) {
 			EObject next = objects.next();
@@ -84,24 +95,27 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 			eObjectsToSide.put(next, side);
 			if(next.eContainer() == null) roots.add(next);
 		}
+
 		// build coarse-grained index from roots
-		for(EObject root : roots) {
-			index.buildTreeIndex(root, side);
+		if(configure.isUsingSubtreeHash()) {
+			for(EObject root : roots) {
+				buildSubtreeKey(root);
+			}
 		}
 
 		return roots;
 	}
 
-	public void createMatches(Comparison comparison, Iterable<? extends EObject> leftRoots, Iterable<? extends EObject> rightRoots, Iterable<? extends EObject> originalRoots) {
-		buildIndex(leftRoots, Side.LEFT);
-		buildIndex(rightRoots, Side.RIGHT);
-		buildIndex(originalRoots, Side.ORIGIN);
-
-		// top-down match
-
-		// unmatch others
+	private int buildSubtreeKey(EObject root) {
+		int maxChildDepth = 0;
+		for(EObject child : root.eContents()) {
+			ElementIndexAdapter cAdapter = ElementIndexAdapter.getAdapter(child);
+			if(maxChildDepth < cAdapter.depth) maxChildDepth = cAdapter.depth;
+		}
+		ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(root);
+		adapter.depth = maxChildDepth + 1;
+		return adapter.depth;
 	}
-
 
 	/**
 	 * Build index from roots
@@ -117,9 +131,9 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 
 	private ElementIndexAdapter buildIndex(EObject root, Side side) {
 		ElementIndexAdapter adapter = doHash(root);
+		int maxDepth = 0;
 		index.index(root, side);
 		eObjectsToSide.put(root, side);
-		int maxDepth = 0;
 		for(EObject child : root.eContents()) {
 			ElementIndexAdapter cAdapter = buildIndex(child, side);
 			if(maxDepth < cAdapter.depth) maxDepth = cAdapter.depth;
@@ -142,72 +156,36 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		return adapter;
 	}
 
+	public void createMatches(Comparison comparison, Iterator<? extends EObject> leftEObjects,
+		Iterator<? extends EObject> rightEObjects, Iterator<? extends EObject> originEObjects) {
+		Set<EObject> leftRoots = buildIndex(leftEObjects, Side.LEFT);
+		Set<EObject> rightRoots = buildIndex(rightEObjects, Side.RIGHT);
+		Set<EObject> originRoots = buildIndex(originEObjects, Side.ORIGIN);
+		
+		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots = Triple.make(leftRoots, rightRoots, originRoots);
+
+		matchIndexedObjects(comparison, roots);
+		createUnmatchesForRemainingObjects(comparison);
+		restructureMatchModel(comparison);
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
+	@SuppressWarnings("unchecked")
+	public void createMatches(Comparison comparison, Collection<EObject> leftRoots,
+		Collection<EObject> rightRoots, Collection<EObject> originRoots) {
+		buildIndex(leftRoots, Side.LEFT);
+		buildIndex(rightRoots, Side.RIGHT);
+		buildIndex(originRoots, Side.ORIGIN);
 
-	public void createMatches(Comparison comparison, Iterator<? extends EObject> leftEObjects,
-			Iterator<? extends EObject> rightEObjects, Iterator<? extends EObject> originEObjects) {
-		if (!leftEObjects.hasNext() && !rightEObjects.hasNext() && !originEObjects.hasNext()) {
-			return;
-		}
-		
-		Set<EObject> leftRoots = buildIndex(leftEObjects, Side.LEFT);
-		Set<EObject> rightRotos = buildIndex(rightEObjects, Side.RIGHT);
-		Set<EObject> originalRoots = buildIndex(originEObjects, Side.ORIGIN);
+		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots = Triple.make(leftRoots, rightRoots, originRoots);
 
-		// int nbElements = 0;
-		// int lastSegment = 0;
-		/*
-		 * We are iterating through the three sides of the scope at the same time so that index might apply
-		 * pre-matching strategies elements if they wish.
-		 */
-		// while (leftEObjects.hasNext() || rightEObjects.hasNext() || originEObjects.hasNext()) {
-		// 	if (leftEObjects.hasNext()) {
-		// 		EObject next = leftEObjects.next();
-		// 		index.index(next, Side.LEFT);
-		// 		eObjectsToSide.put(next, Side.LEFT);
-		// 	}
-
-		// 	if (rightEObjects.hasNext()) {
-		// 		EObject next = rightEObjects.next();
-		// 		index.index(next, Side.RIGHT);
-		// 		eObjectsToSide.put(next, Side.RIGHT);
-		// 	}
-
-		// 	if (originEObjects.hasNext()) {
-		// 		EObject next = originEObjects.next();
-		// 		index.index(next, Side.ORIGIN);
-		// 		eObjectsToSide.put(next, Side.ORIGIN);
-		// 	}
-		// 	// if (nbElements / NB_ELEMENTS_BETWEEN_MATCH_AHEAD > lastSegment) {
-		// 	// 	matchAheadOfTime(comparison);
-		// 	// 	lastSegment++;
-		// 	// }
-		// }
-
-		matchIndexedObjects(comparison);
-
+		matchIndexedObjects(comparison, roots);
 		createUnmatchesForRemainingObjects(comparison);
 		restructureMatchModel(comparison);
 
 	}
-
-	// /**
-	//  * If the index supports it, match element ahead of time, in case of failure the elements are kept and
-	//  * will be processed again later on.
-	//  * 
-	//  * @param comparison
-	//  *            the current comparison.
-	//  * @param monitor
-	//  *            monitor to track progress.
-	//  */
-	// private void matchAheadOfTime(Comparison comparison) {
-	// 	if (index instanceof MatchAheadOfTime) {
-	// 		matchList(comparison, ((MatchAheadOfTime)index).getValuesToMatchAhead(Side.LEFT), false);
-	// 		matchList(comparison, ((MatchAheadOfTime)index).getValuesToMatchAhead(Side.RIGHT), false);
-	// 	}
-	// }
 
 	/**
 	 * Match elements for real, if no match is found for an element, an object will be created to represent
@@ -218,14 +196,14 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	 * @param monitor
 	 *            monitor to track progress.
 	 */
-	private void matchIndexedObjects(Comparison comparison) {
+	private void matchIndexedObjects(Comparison comparison, Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
 		Iterable<EObject> todo = index.getValuesStillThere(Side.LEFT);
 		while (todo.iterator().hasNext()) {
-			todo = matchList(comparison, todo, true);
+			todo = matchList(comparison, todo, true, roots);
 		}
 		todo = index.getValuesStillThere(Side.RIGHT);
 		while (todo.iterator().hasNext()) {
-			todo = matchList(comparison, todo, true);
+			todo = matchList(comparison, todo, true, roots);
 		}
 
 	}
@@ -267,7 +245,8 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	 *            a monitor to track progress.
 	 * @return the list of EObjects which could not be processed for some reason.
 	 */
-	private Iterable<EObject> matchList(Comparison comparison, Iterable<EObject> todoList, boolean createUnmatches) {
+	private Iterable<EObject> matchList(Comparison comparison, Iterable<EObject> todoList, boolean createUnmatches,
+		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
 		Set<EObject> remainingResult = Sets.newLinkedHashSet();
 		List<EObject> requiredContainers = Lists.newArrayList();
 
@@ -292,9 +271,9 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 			/*
 			 * At this point you need to be sure the element has not been matched in any other way before.
 			 */
-			Match match = MatchUtil.getMatch(next, comparison);
-			if (!MatchUtil.isFullMatch(match)) {
-				if (!tryToMatch(comparison, next, match, createUnmatches)) {
+			Match partialMatch = comparison.getMatch(next);
+			if (!MatchUtil.isFullMatch(partialMatch)) {
+				if (!tryToMatch(comparison, next, partialMatch, createUnmatches, roots)) {
 					remainingResult.add(next);
 				}
 			}
@@ -312,13 +291,15 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	 *            the comparison under construction, it will be updated with the new match.
 	 * @param a
 	 *            object to match.
-	 * @param partialMatch
+	 * @param partialMatchOfA
+	 * 			  the partial match (cached) of a
 	 * @param createUnmatches
 	 *            whether elements which have no match should trigger the creation of a Match object (meaning
 	 *            we won't try to match them afterwards) or not.
 	 * @return false if the conditions are not fulfilled to create the match, true otherwhise.
 	 */
-	private boolean tryToMatch(Comparison comparison, EObject a, Match partialMatch, boolean createUnmatches) {
+	private boolean tryToMatch(Comparison comparison, EObject a, Match partialMatchOfA, boolean createUnmatches, 
+		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
 		boolean okToMatch;
 		Side aSide = eObjectsToSide.get(a);
 		assert aSide != null;
@@ -339,29 +320,284 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		assert cSide != aSide;
 
 		// sub-tree match
-		coarseGainedMatch(comparison, partialMatch, a, aSide, bSide, cSide);
+		if(coarseGainedMatch(comparison, partialMatchOfA, a, aSide, bSide, cSide, roots)) return true;
 
 		// fine-gained matching
-		okToMatch = fineGainedMatch(comparison, partialMatch, a, aSide, bSide, cSide, createUnmatches);
+		okToMatch = fineGainedMatch(comparison, partialMatchOfA, a, aSide, bSide, cSide, createUnmatches);
 		
 		return okToMatch;
 	}
 
-	private void coarseGainedMatch(Comparison comparison, Match partialMatch, EObject a, Side aSide, Side bSide, Side cSide) {
+	private boolean coarseGainedMatch(Comparison comparison, Match partialMatchOfA, EObject a, Side aSide, Side bSide, Side cSide, 
+		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
 		// find subtrees in bSide and cSide
 		// if bSubtree == null && cSubtree == null, then do nothing
 		// if bSubtree != null && cSubtree == null, then Match.a = aSubtree, Match.b = bSubtree, Match.c = PSEUDO
 		// if bSubtree == null && cSubtree != null, then Match.a = aSubtree, Match.b = PSEUDO, Match.c = cSubtree
 		// if bSubtree != null && cSubtree != null, then Match.a = aSubtree, Match.b = bSubtree, Match.c = cSubtree, remove all from index
+		if(configure.isUsingSubtreeHash()) {
+			// when partialMatchOfA != null, we should match objects with partial matches
+			// otherwise, we can match objects with partial matches
+			// if findIdenticalSubtrees returns a match
+			//    if partialMatchOfA == null && result !=null
+			//    if result == partialMatchOfA, fill from aSide
+			//    if partialMatchOfA == null && result != partialMatchOfA, it is a new match or a partial match from other sides
+			//      for a new match, createNewMatch
+			//      otherwise, fill from the side of result (either bSide or cSide)
+			boolean unmatchedB = MatchUtil.isMatched(partialMatchOfA, bSide);
+			
+			Match result = index.findIdenticalSubtrees(comparison, a, aSide, partialMatchOfA, roots);
+			
+			if(partialMatchOfA == null) {
+				if(result == null) {
+					// no subtree match is found
+					return false;
+				} else {
+					if(result.eContainer() == null) {
+						// this is a new match
+						createNewSubtreeMatches(comparison, result, roots);
+					} else {
+						// this is a match from other sides
+						// fill a
+						// fillSubtreeMatch(result, aSide)
+						fillSubtreeMatches(comparison, result, aSide, roots);
+					}
+					return true;
+				}
+			} else {
+				// in this case, result will not be null
+				// we must check if the partial match is changed
+				// if changed, fill b or c
+				// fillSubtreeMatch(result, bSide) or fillSubtreeMatch(result, cSide)
+				ObjectIndex.Side sideToFill = null;
+				if(unmatchedB) {
+					if(MatchUtil.isMatched(result, bSide)) sideToFill = bSide;
+				} else {
+					if(MatchUtil.isMatched(result, cSide)) sideToFill = cSide;
+				}
+
+				if(sideToFill != null) {
+					fillSubtreeMatches(comparison, result, sideToFill, roots);
+					return true;
+				} else 
+					return false;
+			}
+		} else return false;
+	}
+
+	// at this point, we know that sideToFile is sub-tree-equal to one of the other two sides.
+	// 	since this match is filled from a partial match and 
+	// 	we create partial match only when the filled sides are sub-tree-equal
+	private void fillSubtreeMatches(Comparison comparison, Match match, ObjectIndex.Side sideToFill,
+		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
+		
+		if(MatchUtil.isFullMatch(match)) {
+			index.remove(match.getLeft(), ObjectIndex.Side.LEFT);
+			index.remove(match.getRight(), ObjectIndex.Side.RIGHT);
+			if(match.getOrigin() != null) {
+				index.remove(match.getOrigin(), ObjectIndex.Side.ORIGIN);
+			}
+		}
+
+		List<EObject> lefts = getChildren(match.getLeft());
+		List<EObject> rights = getChildren(match.getRight());
+		List<EObject> origins = getChildren(match.getOrigin());
+
+		List<EObject> colA = null;
+		List<EObject> colB = null;
+		List<EObject> colToFill = null;
+		ObjectIndex.Side sideA = null;
+		ObjectIndex.Side sideB = null;
+
+		switch(sideToFill) {
+			case LEFT:
+			colA = rights;
+			colB = origins;
+			colToFill = lefts;
+			sideA = ObjectIndex.Side.RIGHT;
+			sideB = ObjectIndex.Side.ORIGIN;
+			break;
+			case RIGHT:
+			colA = lefts;
+			colB = origins;
+			colToFill = rights;
+			sideA = ObjectIndex.Side.LEFT;
+			sideB = ObjectIndex.Side.ORIGIN;
+			break;
+			case ORIGIN:
+			colA = lefts;
+			colB = rights;
+			colToFill = origins;
+			sideA = ObjectIndex.Side.LEFT;
+			sideB = ObjectIndex.Side.RIGHT;
+			break;
+		}
+
+
+		if(lefts.size() == rights.size() && lefts.size() == origins.size()) {
+			int size = lefts.size();
+			for(int i=0;i<size;i++) {
+				EObject ac = colA.get(i);
+				EObject bc = colB.get(i);
+				EObject fc = colToFill.get(i);
+
+				if(ac.eClass() == fc.eClass()) {
+					Match childMatch = comparison.getMatch(ac);
+					if(childMatch != null) {
+						if(MatchUtil.tryFillMatched(childMatch, fc, sideToFill)) {
+							fillSubtreeMatches(comparison, childMatch, sideToFill, roots);
+							continue;
+						} else {
+							System.err.println(childMatch);
+						}
+						
+						if(MatchUtil.getMatchedObject(childMatch, sideB) == bc) 
+							continue;
+					} else {
+						System.err.println("null child match [A]!");
+					}
+				}
+				
+				if(bc.eClass() == fc.eClass()) {
+					Match childMatch = comparison.getMatch(bc);
+					if(childMatch != null) {
+						if(MatchUtil.tryFillMatched(childMatch, fc, sideToFill)) {
+							fillSubtreeMatches(comparison, childMatch, sideToFill, roots);
+						} else {
+							System.err.println(childMatch);
+						}
+					} else {
+						System.err.println("null child match [B]!");
+					}
+				}
+			}
+
+		} else {
+			// we stop here because we cannot ensure subtree equal
+			// and this branch should rarely be triggered
+			throw new RuntimeException("An unexpected branch is triggered. We hope the partial match should be sub-tree-equal. Please check if this case is reasonable.");
+		}
+
+
+	}
+
+	private void createNewSubtreeMatches(Comparison comparison, Match match,
+		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
+
+		if(roots.origin.isEmpty() && match.getOrigin() == MatchUtil.PSEUDO_MATCHED_OBJECT) {
+			match.setOrigin(null); // finalize this match
+		}
+
+		((BasicEList<Match>)comparison.getMatches()).addUnique(match);
+
+		// if match is a full match, remove objects
+		if(MatchUtil.isFullMatch(match)) {
+			index.remove(match.getLeft(), ObjectIndex.Side.LEFT);
+			index.remove(match.getRight(), ObjectIndex.Side.RIGHT);
+			if(match.getOrigin() != null) {
+				index.remove(match.getOrigin(), ObjectIndex.Side.ORIGIN);
+			}
+		}
+		
+		List<EObject> lefts = getChildren(match.getLeft());
+		List<EObject> rights = getChildren(match.getRight());
+		List<EObject> origins = getChildren(match.getOrigin());
+
+		boolean lrEqualSize = lefts.size() == rights.size();
+		boolean loEqualSize = lefts.size() == origins.size();
+
+		if(lrEqualSize && loEqualSize) {
+			int size = lefts.size();
+			for(int i=0; i< size; i++) {
+				EObject lc = lefts.get(i);
+				EObject rc = rights.get(i);
+				EObject oc = origins.get(i);
+
+				boolean lrEqType = lc.eClass() == rc.eClass();
+				boolean loEqType = lc.eClass() == oc.eClass();
+
+				if(lrEqType && loEqType) {
+					Match childMatch = CompareFactory.eINSTANCE.createMatch();
+					childMatch.setLeft(lc);
+					childMatch.setRight(rc);
+					childMatch.setOrigin(oc);
+					createNewSubtreeMatches(comparison, childMatch, roots);
+				} else if(lrEqType) {
+					Match childMatch = CompareFactory.eINSTANCE.createMatch();
+					childMatch.setLeft(lc);
+					childMatch.setRight(rc);
+					childMatch.setOrigin(MatchUtil.PSEUDO_MATCHED_OBJECT);
+					createNewSubtreeMatches(comparison, childMatch, roots);
+				} else if(loEqType) {
+					Match childMatch = CompareFactory.eINSTANCE.createMatch();
+					childMatch.setLeft(lc);
+					childMatch.setRight(MatchUtil.PSEUDO_MATCHED_OBJECT);
+					childMatch.setOrigin(oc);
+					createNewSubtreeMatches(comparison, childMatch, roots);
+				} else if(rc.eClass() == oc.eClass()) {
+					Match childMatch = CompareFactory.eINSTANCE.createMatch();
+					childMatch.setLeft(MatchUtil.PSEUDO_MATCHED_OBJECT);
+					childMatch.setRight(rc);
+					childMatch.setOrigin(oc);
+					createNewSubtreeMatches(comparison, childMatch, roots);
+				}
+			}
+		} else if(lrEqualSize) {
+			int size = lefts.size();
+			for(int i=0; i< size; i++) {
+				EObject lc = lefts.get(i);
+				EObject rc = rights.get(i);
+				if(lc.eClass() == rc.eClass()) {
+					Match childMatch = CompareFactory.eINSTANCE.createMatch();
+					childMatch.setLeft(lc);
+					childMatch.setRight(rc);
+					childMatch.setOrigin(MatchUtil.PSEUDO_MATCHED_OBJECT);
+					createNewSubtreeMatches(comparison, childMatch, roots);
+				}
+			}
+		} else if(loEqualSize) {
+			int size = lefts.size();
+			for(int i=0; i< size; i++) {
+				EObject lc = lefts.get(i);
+				EObject oc = origins.get(i);
+				if(lc.eClass() == oc.eClass()) {
+					Match childMatch = CompareFactory.eINSTANCE.createMatch();
+					childMatch.setLeft(lc);
+					childMatch.setRight(MatchUtil.PSEUDO_MATCHED_OBJECT);
+					childMatch.setOrigin(oc);
+					createNewSubtreeMatches(comparison, childMatch, roots);
+				}
+			}
+		} else if(rights.size() == origins.size()) {
+			int size = rights.size();
+			for(int i=0; i< size; i++) {
+				EObject rc = rights.get(i);
+				EObject oc = origins.get(i);
+				if(rc.eClass() == oc.eClass()) {
+					Match childMatch = CompareFactory.eINSTANCE.createMatch();
+					childMatch.setLeft(MatchUtil.PSEUDO_MATCHED_OBJECT);
+					childMatch.setRight(rc);
+					childMatch.setOrigin(oc);
+					createNewSubtreeMatches(comparison, childMatch, roots);
+				}
+			}
+		}
+
+	}
+
+
+	private List<EObject> getChildren(EObject obj) {
+		if(obj == null) return Collections.emptyList();
+		else return obj.eContents();
 	}
 
 	private boolean fineGainedMatch(Comparison comparison, Match partialMatch, EObject a, Side aSide, Side bSide, Side cSide, boolean createUnmatches) {
 		boolean okToMatch = false;
-		Map<Side, EObject> closests = index.findClosests(comparison, a, aSide);
+		Map<Side, EObject> closests = index.findClosests(comparison, a, aSide, partialMatch);
 		if (closests != null) {
-			EObject lObj = closests.get(bSide);
-			EObject aObj = closests.get(cSide);
-			if (lObj != null || aObj != null) {
+			EObject bObj = closests.get(bSide);
+			EObject cObj = closests.get(cSide);
+			if (bObj != null || cObj != null) {
 				// we have at least one other match
 				areMatching(comparison, closests.get(Side.LEFT), closests.get(Side.RIGHT), closests.get(Side.ORIGIN), partialMatch);
 				okToMatch = true;
@@ -405,7 +641,9 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	}
 
 	/**
-	 * Register the given object as a match and add it in the comparison.
+	 * If the partialMatch is null, this method will register the given object as a match and add it in the comparison.
+	 * If the partialMatch is not null, this method will fill the blanks (i.e., PSEUDO_MATCHED_OBJECT) with the actual match (or null).
+	 * Note that after this method is called, partialMatch becomes a full match.
 	 * 
 	 * @param comparison
 	 *            container for the Match.

@@ -45,6 +45,7 @@ public class MatcherConfigure {
     private Hasher elementHasher;
 
     private boolean useIdentityHash = false;
+    private boolean useSubtreeHash = false;
 
     public MatcherConfigure() {
         this.defaultWeightTable = new EcoreWeightTable();
@@ -58,8 +59,21 @@ public class MatcherConfigure {
         return useIdentityHash;
     }
 
+    public boolean isUsingSubtreeHash() {
+        return useIdentityHash && useSubtreeHash;
+    }
+
     public void setUseIdentityHash(boolean useIdentityHash) {
         this.useIdentityHash = useIdentityHash;
+    }
+
+    public void setUseSubtreeHash(boolean useSubtreeHash) {
+        if(useSubtreeHash) {
+            this.useIdentityHash = true;
+            this.useSubtreeHash = true;
+        } else {
+            this.useSubtreeHash = false;
+        }
     }
 
     public Hasher getElementHasher() {

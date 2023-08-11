@@ -1,5 +1,6 @@
 package edu.ustb.sei.mde.fastcompare.match;
 
+import java.util.Collection;
 import java.util.Iterator;
 
 import org.eclipse.emf.compare.Comparison;
@@ -11,20 +12,26 @@ public interface IEObjectMatcher {
 	 * <p>
 	 * The implementation should update the given comparison object by adding the Matches it detect. These
 	 * matches should include both matching and unmatchings EObjects (i.e. EObjects that can be matched in all
-	 * three lists, EObjects that cna be matched in only two of the three lists, and EObjects that can only be
+	 * three lists, EObjects that can be matched in only two of the three lists, and EObjects that can only be
 	 * found in one of the three.
+	 * </p>
+	 * 
+	 * <p>
+	 * Note that this interface is different from EMF Compare because it accepts iterables of root objects,
+	 * rather than iterators of all objects. We made this change to intend to get better efficiency but losing
+	 * flexiblity.
 	 * </p>
 	 * 
 	 * @param comparison
 	 *            the comparison to update.
-	 * @param leftEObjects
-	 *            An iterator over the EObjects that could be found in the left side.
-	 * @param rightEObjects
-	 *            An iterator over the EObjects that could be found in the right side.
-	 * @param originEObjects
-	 *            And iterator over the EObject that may be considered ancestors of the couples that can be
+	 * @param leftRoots
+	 *            An iterable over the root EObjects that could be found in the left side.
+	 * @param rightRoots
+	 *            An iterable over the root EObjects that could be found in the right side.
+	 * @param originalRoots
+	 *            And iterable over the root EObject that may be considered ancestors of the couples that can be
 	 *            detected in the left and right sides.
 	 */
-	void createMatches(Comparison comparison, Iterator<? extends EObject> leftEObjects,
-			Iterator<? extends EObject> rightEObjects, Iterator<? extends EObject> originEObjects);
+	void createMatches(Comparison comparison, Collection<EObject> leftRoots,
+		Collection<EObject> rightRoots, Collection<EObject> originRoots);
 }

@@ -1,11 +1,13 @@
 package edu.ustb.sei.mde.fastcompare.index;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.emf.compare.Comparison;
+import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 
@@ -14,6 +16,7 @@ import com.google.common.collect.Lists;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.match.ScopeQuery;
+import edu.ustb.sei.mde.fastcompare.utils.Triple;
 
 public class ByTypeIndex implements ObjectIndex {
     final private ScopeQuery scope;
@@ -35,11 +38,19 @@ public class ByTypeIndex implements ObjectIndex {
 		return Iterables.concat(allLists);
 	}
 	@Override
-	public Map<Side, EObject> findClosests(Comparison inProgress, EObject eObj, Side side) {
+	public Map<Side, EObject> findClosests(Comparison inProgress, EObject eObj, Side side, Match partialMatchOfEObj) {
 		EClass clazz = eObj.eClass();
         ObjectIndex subIndex = allIndexes.get(clazz);
         if(subIndex == null) return Collections.emptyMap();
-        else return subIndex.findClosests(inProgress, eObj, side);
+        else return subIndex.findClosests(inProgress, eObj, side, partialMatchOfEObj);
+	}
+
+	@Override
+	public Match findIdenticalSubtrees(Comparison inProgress, EObject eObj, Side side, Match partialMatchOfEObj, Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
+		EClass clazz = eObj.eClass();
+        ObjectIndex subIndex = allIndexes.get(clazz);
+        if(subIndex == null) return null;
+        else return subIndex.findIdenticalSubtrees(inProgress, eObj, side, partialMatchOfEObj, roots);
 	}
 
 	@Override
@@ -59,13 +70,5 @@ public class ByTypeIndex implements ObjectIndex {
                 return new ProximityIndex(scope, matcherConfigure, NoFilterIndex::new);
         });
         subIndex.index(eObj, side);
-	}
-
-	@Override
-	public void buildTreeIndex(EObject root, Side side) {
-		ObjectIndex subIndex = allIndexes.get(root.eClass());
-		if(subIndex != null) {
-			subIndex.buildTreeIndex(root, side);
-		}
 	}
 }
