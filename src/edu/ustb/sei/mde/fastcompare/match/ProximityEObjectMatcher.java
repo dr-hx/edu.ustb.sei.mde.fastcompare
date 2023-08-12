@@ -10,7 +10,6 @@ import edu.ustb.sei.mde.fastcompare.config.Hasher;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.index.ByTypeIndex;
 import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapter;
-import edu.ustb.sei.mde.fastcompare.index.Indexing;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex.Side;
 import edu.ustb.sei.mde.fastcompare.shash.Hash64;
@@ -19,7 +18,6 @@ import edu.ustb.sei.mde.fastcompare.utils.Triple;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -172,7 +170,6 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	/**
 	 * {@inheritDoc}
 	 */
-	@SuppressWarnings("unchecked")
 	public void createMatches(Comparison comparison, Collection<EObject> leftRoots,
 		Collection<EObject> rightRoots, Collection<EObject> originRoots) {
 		buildIndex(leftRoots, Side.LEFT);

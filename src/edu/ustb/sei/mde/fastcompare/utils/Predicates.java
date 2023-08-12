@@ -40,4 +40,16 @@ public class Predicates {
     static public <T> Predicate<T> not(Predicate<? super T> pred) {
         return t->!pred.test(t);
     }
+
+    final static private Predicate<?> ALWAYS_TRUE = (k)->true;
+    @SuppressWarnings("unchecked")
+    public static <K> Predicate<K> alwaysTrue() {
+        return (Predicate<K>) ALWAYS_TRUE;
+    }
+
+    final static private Predicate<?> ALWAYS_FALSE = (k)->false;
+    @SuppressWarnings("unchecked")
+    public static <K> Predicate<K> alwaysFalse() {
+        return (Predicate<K>) ALWAYS_FALSE;
+    }
 }

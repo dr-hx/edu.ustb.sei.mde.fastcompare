@@ -34,4 +34,7 @@ public interface IEObjectMatcher {
 	 */
 	void createMatches(Comparison comparison, Collection<EObject> leftRoots,
 		Collection<EObject> rightRoots, Collection<EObject> originRoots);
+	
+	void createMatches(Comparison comparison, Iterator<? extends EObject> leftEObjects,
+		Iterator<? extends EObject> rightEObjects, Iterator<? extends EObject> originEObjects);
 }
