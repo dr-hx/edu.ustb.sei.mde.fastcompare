@@ -359,7 +359,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 						// fillSubtreeMatch(result, aSide)
 						fillSubtreeMatches(comparison, result, aSide, roots);
 					}
-					return true;
+					return MatchUtil.isFullMatch(result);
 				}
 			} else {
 				// in this case, result will not be null

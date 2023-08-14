@@ -320,19 +320,6 @@ public class DefaultMatchEngine implements IMatchEngine {
 	}
 
 	/**
-	 * This will be used to create the resource matcher that will be used by this match engine.
-	 * 
-	 * @return An {@link IResourceMatcher} that can be used to retrieve the {@link MatchResource}s for this
-	 *         comparison.
-	 * @deprecated use {@link DefaultMatchEngine} constructor with {@link StrategyResourceMatcher} parameter
-	 *             instead.
-	 */
-	@Deprecated
-	protected IResourceMatcher createResourceMatcher() {
-		return new StrategyResourceMatcher();
-	}
-
-	/**
 	 * Returns the Resource matcher associated with this match engine.
 	 * 
 	 * @return The Resource matcher associated with this match engine.
