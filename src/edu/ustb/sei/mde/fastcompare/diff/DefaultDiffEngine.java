@@ -24,7 +24,7 @@ import edu.ustb.sei.mde.fastcompare.config.FeatureConfigure;
 import edu.ustb.sei.mde.fastcompare.config.FeatureFilter;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.match.EqualityHelper;
-import edu.ustb.sei.mde.fastcompare.match.eobject.IEqualityHelper;
+import edu.ustb.sei.mde.fastcompare.match.IEqualityHelper;
 import edu.ustb.sei.mde.fastcompare.utils.DiffUtil;
 import edu.ustb.sei.mde.fastcompare.utils.ComparisonUtil;
 import static edu.ustb.sei.mde.fastcompare.utils.ReferenceUtil.getAsList;

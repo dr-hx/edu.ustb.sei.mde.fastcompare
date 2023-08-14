@@ -9,15 +9,16 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import edu.ustb.sei.mde.fastcompare.config.FeatureConfigure.AdaptiveFeatureConfigure;
 import edu.ustb.sei.mde.fastcompare.match.EqualityHelper;
 import edu.ustb.sei.mde.fastcompare.match.EqualityHelperExtension;
+import edu.ustb.sei.mde.fastcompare.match.IEqualityHelper;
 import edu.ustb.sei.mde.fastcompare.match.eobject.DistanceFunction;
 import edu.ustb.sei.mde.fastcompare.match.eobject.EditionDistance;
-import edu.ustb.sei.mde.fastcompare.match.eobject.IEqualityHelper;
 import edu.ustb.sei.mde.fastcompare.utils.AutoLRUCache;
 import edu.ustb.sei.mde.fastcompare.utils.SimpleLRUCache;
 import edu.ustb.sei.mde.fastcompare.utils.URIComputer;
 
 /**
  * This class provides a unified interface to configure the matcher.
+ * 
  */
 public class MatcherConfigure {
     final static public EStructuralFeature CONTAINER_FEATURE = null;
@@ -53,12 +54,15 @@ public class MatcherConfigure {
     private boolean useSubtreeHash = false;
 
     public MatcherConfigure() {
-        this.defaultWeightTable = new EcoreWeightTable();
-        this.defaultFeatureSHasherTable = new SHasherTable();
-        this.adaptiveFeatureConfigure = new AdaptiveFeatureConfigure(defaultWeightTable, defaultFeatureSHasherTable);
         this.uriComputer = new URIComputer();
-        this.distanceFunction = new EditionDistance(this);
+        this.defaultWeightTable = new EcoreWeightTable();
+
         this.equalityHelper = new EqualityHelper(new AutoLRUCache<>(4096, 4096, 0.75f), this);
+        this.distanceFunction = new EditionDistance(this);
+        
+        this.defaultFeatureSHasherTable = SHasherTable.makeDefaultSHasherTable(this);
+        this.adaptiveFeatureConfigure = new AdaptiveFeatureConfigure(defaultWeightTable, defaultFeatureSHasherTable);
+        this.elementHasher = new Hasher(this);
     }
 
     public boolean isUsingIdentityHash() {

@@ -2,8 +2,6 @@ package edu.ustb.sei.mde.fastcompare.match;
 
 import org.eclipse.emf.ecore.EObject;
 
-import edu.ustb.sei.mde.fastcompare.match.eobject.IEqualityHelper;
-
 public interface EqualityHelperExtension {
 	/**
 	 * Enumeration used to return the result of a specific matching.

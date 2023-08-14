@@ -1,4 +1,4 @@
-package edu.ustb.sei.mde.fastcompare.match.eobject;
+package edu.ustb.sei.mde.fastcompare.match;
 
 import org.eclipse.emf.common.notify.Adapter;
 

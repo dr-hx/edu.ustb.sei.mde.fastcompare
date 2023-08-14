@@ -6,7 +6,6 @@ import org.eclipse.emf.compare.CompareFactory;
 import org.eclipse.emf.compare.Comparison;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
-import edu.ustb.sei.mde.fastcompare.match.eobject.IEqualityHelper;
 
 public class DefaultComparisonFactory implements IComparisonFactory {
 

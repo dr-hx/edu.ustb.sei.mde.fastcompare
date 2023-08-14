@@ -17,7 +17,6 @@ import org.eclipse.emf.ecore.util.FeatureMap;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.match.EqualityHelperExtension.SpecificMatch;
-import edu.ustb.sei.mde.fastcompare.match.eobject.IEqualityHelper;
 import edu.ustb.sei.mde.fastcompare.utils.AutoLRUCache;
 
 public class EqualityHelper extends AdapterImpl implements IEqualityHelper {
@@ -141,10 +140,10 @@ public class EqualityHelper extends AdapterImpl implements IEqualityHelper {
 
 		// Call to specific matcher if one was provided
 		if (matcherConfigure != null && object1 != null && object2 != null) {
-			EqualityHelperExtension equalityHelperExtensionProvider = matcherConfigure.getEqualityHelperExtension();
+			EqualityHelperExtension equalityHelperExtension = matcherConfigure.getEqualityHelperExtension();
 
-			if (equalityHelperExtensionProvider != null) {
-				SpecificMatch specificMatch = equalityHelperExtensionProvider.matchingEObjects(object1,
+			if (equalityHelperExtension != null) {
+				SpecificMatch specificMatch = equalityHelperExtension.matchingEObjects(object1,
 						object2, this);
 				if (specificMatch != null) {
 					switch (specificMatch) {

@@ -30,6 +30,7 @@ import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.diff.DefaultDiffEngine;
 import edu.ustb.sei.mde.fastcompare.diff.IDiffProcessor;
 import edu.ustb.sei.mde.fastcompare.match.EqualityHelper;
+import edu.ustb.sei.mde.fastcompare.match.IEqualityHelper;
 import edu.ustb.sei.mde.fastcompare.match.URIDistance;
 import edu.ustb.sei.mde.fastcompare.utils.AccessBasedLRUCache;
 

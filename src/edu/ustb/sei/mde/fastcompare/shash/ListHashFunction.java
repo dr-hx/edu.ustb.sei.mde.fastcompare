@@ -7,7 +7,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 public class ListHashFunction implements SHashFunction<List<?>> {
     final private SHashFunction<?> innerHash;
 
-    public ListHashFunction(SHashFunction<List<?>> innerHash) {
+    public ListHashFunction(SHashFunction<?> innerHash) {
         this.innerHash = innerHash;
     }
 

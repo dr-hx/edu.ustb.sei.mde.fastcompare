@@ -48,7 +48,7 @@ public class HashFilterIndex implements ObjectFilterIndex {
 
 
     public Iterable<EObject> allCandidates() {
-        return allObjects;
+        return new LinkedHashSet<>(allObjects);
     }
 
     public double getContainerSimilarityRatio(EObject object) {

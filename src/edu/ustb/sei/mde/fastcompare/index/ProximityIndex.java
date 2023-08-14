@@ -125,12 +125,14 @@ public class ProximityIndex implements ObjectIndex {
 			return partialMatch;
 
 		final EObject eContainer = eObj.eContainer();
-		// we expect to hit the cache of the container match
-		final Match containerMatch = MatchUtil.getMatch(eContainer, inProgress);
-		assert containerMatch != null;
-
 		EObject matchedContainer = null;
-		matchedContainer = MatchUtil.getMatchedObject(containerMatch, sideToFind);
+
+		if(eContainer != null) {
+			// we expect to hit the cache of the container match
+			final Match containerMatch = MatchUtil.getMatch(eContainer, inProgress);
+			matchedContainer = MatchUtil.getMatchedObject(containerMatch, sideToFind);
+		}
+		
 		Iterable<EObject> candidates = null;
 
 		if (matchedContainer == null) {
