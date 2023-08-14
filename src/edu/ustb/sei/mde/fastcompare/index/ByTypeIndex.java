@@ -15,7 +15,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
-import edu.ustb.sei.mde.fastcompare.match.ScopeQuery;
+import edu.ustb.sei.mde.fastcompare.match.eobject.ScopeQuery;
 import edu.ustb.sei.mde.fastcompare.utils.Triple;
 
 public class ByTypeIndex implements ObjectIndex {

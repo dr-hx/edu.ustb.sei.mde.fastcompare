@@ -19,9 +19,9 @@ import com.google.common.collect.Maps;
 import edu.ustb.sei.mde.fastcompare.config.ClassConfigure;
 import edu.ustb.sei.mde.fastcompare.config.Hasher;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
-import edu.ustb.sei.mde.fastcompare.match.CachingDistanceFunction;
-import edu.ustb.sei.mde.fastcompare.match.CachingDistanceFunctionEx;
-import edu.ustb.sei.mde.fastcompare.match.ScopeQuery;
+import edu.ustb.sei.mde.fastcompare.match.eobject.CachingDistanceFunction;
+import edu.ustb.sei.mde.fastcompare.match.eobject.CachingDistanceFunctionEx;
+import edu.ustb.sei.mde.fastcompare.match.eobject.ScopeQuery;
 import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
 import edu.ustb.sei.mde.fastcompare.utils.Triple;
 

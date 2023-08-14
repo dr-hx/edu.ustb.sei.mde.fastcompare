@@ -1,4 +1,4 @@
-package edu.ustb.sei.mde.fastcompare.match;
+package edu.ustb.sei.mde.fastcompare.match.eobject;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;

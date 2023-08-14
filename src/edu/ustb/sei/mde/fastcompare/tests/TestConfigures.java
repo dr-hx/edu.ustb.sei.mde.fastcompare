@@ -16,7 +16,7 @@ import edu.ustb.sei.mde.fastcompare.config.ClassConfigure;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.config.MutableFeatureConfigure;
 import edu.ustb.sei.mde.fastcompare.ihash.ElementIHasher;
-import edu.ustb.sei.mde.fastcompare.match.EditionDistance;
+import edu.ustb.sei.mde.fastcompare.match.eobject.EditionDistance;
 
 public class TestConfigures {
 

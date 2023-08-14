@@ -9,7 +9,7 @@ import org.eclipse.emf.compare.match.resource.StrategyResourceMatcher;
 import org.eclipse.emf.ecore.EcorePackage;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
-import edu.ustb.sei.mde.fastcompare.match.EditionDistance;
+import edu.ustb.sei.mde.fastcompare.match.eobject.EditionDistance;
 import edu.ustb.sei.mde.fastcompare.shash.Hash64;
 import edu.ustb.sei.mde.fastcompare.shash.SHashFunction;
 

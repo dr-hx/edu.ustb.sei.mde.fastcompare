@@ -1,4 +1,4 @@
-package edu.ustb.sei.mde.fastcompare.match;
+package edu.ustb.sei.mde.fastcompare.match.eobject;
 
 import java.util.List;
 import java.util.Map.Entry;
@@ -29,6 +29,8 @@ import edu.ustb.sei.mde.fastcompare.config.FeatureFilter;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.diff.DefaultDiffEngine;
 import edu.ustb.sei.mde.fastcompare.diff.IDiffProcessor;
+import edu.ustb.sei.mde.fastcompare.match.EqualityHelper;
+import edu.ustb.sei.mde.fastcompare.match.URIDistance;
 import edu.ustb.sei.mde.fastcompare.utils.AccessBasedLRUCache;
 
 import edu.ustb.sei.mde.fastcompare.utils.DiffUtil;

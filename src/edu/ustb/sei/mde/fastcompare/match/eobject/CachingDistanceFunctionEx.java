@@ -1,4 +1,4 @@
-package edu.ustb.sei.mde.fastcompare.match;
+package edu.ustb.sei.mde.fastcompare.match.eobject;
 
 import java.util.Map;
 

@@ -17,6 +17,7 @@ import org.eclipse.emf.ecore.util.FeatureMap;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.match.EqualityHelperExtension.SpecificMatch;
+import edu.ustb.sei.mde.fastcompare.match.eobject.IEqualityHelper;
 import edu.ustb.sei.mde.fastcompare.utils.AutoLRUCache;
 
 public class EqualityHelper extends AdapterImpl implements IEqualityHelper {
@@ -39,6 +40,10 @@ public class EqualityHelper extends AdapterImpl implements IEqualityHelper {
 	 */
 	public EqualityHelper(AutoLRUCache<EObject, URI> uriCache) {
 		this.uriCache = uriCache;
+	}
+
+	public void setMatcherConfigure(MatcherConfigure matcherConfigure) {
+		this.matcherConfigure = matcherConfigure;
 	}
 
 	/**

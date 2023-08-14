@@ -7,9 +7,12 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import edu.ustb.sei.mde.fastcompare.config.FeatureConfigure.AdaptiveFeatureConfigure;
-import edu.ustb.sei.mde.fastcompare.match.DistanceFunction;
-import edu.ustb.sei.mde.fastcompare.match.EditionDistance;
+import edu.ustb.sei.mde.fastcompare.match.EqualityHelper;
 import edu.ustb.sei.mde.fastcompare.match.EqualityHelperExtension;
+import edu.ustb.sei.mde.fastcompare.match.eobject.DistanceFunction;
+import edu.ustb.sei.mde.fastcompare.match.eobject.EditionDistance;
+import edu.ustb.sei.mde.fastcompare.match.eobject.IEqualityHelper;
+import edu.ustb.sei.mde.fastcompare.utils.AutoLRUCache;
 import edu.ustb.sei.mde.fastcompare.utils.SimpleLRUCache;
 import edu.ustb.sei.mde.fastcompare.utils.URIComputer;
 
@@ -26,6 +29,8 @@ public class MatcherConfigure {
     protected AdaptiveFeatureConfigure adaptiveFeatureConfigure;
 
     protected EqualityHelperExtension equalityHelperExtension;
+
+    protected IEqualityHelper equalityHelper;
 
     // configure maps
     protected Map<EClass, ClassConfigure> classConfigureMap = new LinkedHashMap<>(32);
@@ -53,6 +58,7 @@ public class MatcherConfigure {
         this.adaptiveFeatureConfigure = new AdaptiveFeatureConfigure(defaultWeightTable, defaultFeatureSHasherTable);
         this.uriComputer = new URIComputer();
         this.distanceFunction = new EditionDistance(this);
+        this.equalityHelper = new EqualityHelper(new AutoLRUCache<>(4096, 4096, 0.75f), this);
     }
 
     public boolean isUsingIdentityHash() {
@@ -98,6 +104,14 @@ public class MatcherConfigure {
 
     public void setEqualityHelperExtension(EqualityHelperExtension equalityHelperExtension) {
         this.equalityHelperExtension = equalityHelperExtension;
+    }
+
+    public IEqualityHelper getEqualityHelper() {
+        return equalityHelper;
+    }
+
+    public void setEqualityHelper(IEqualityHelper equalityHelper) {
+        this.equalityHelper = equalityHelper;
     }
 
     public FeatureConfigure getOrCreateGlobalFeatureConfigure(EStructuralFeature feature) {

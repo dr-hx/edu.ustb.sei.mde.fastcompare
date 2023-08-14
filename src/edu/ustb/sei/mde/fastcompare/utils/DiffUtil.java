@@ -7,7 +7,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import edu.ustb.sei.mde.fastcompare.match.EqualityHelper;
-import edu.ustb.sei.mde.fastcompare.match.IEqualityHelper;
+import edu.ustb.sei.mde.fastcompare.match.eobject.IEqualityHelper;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
