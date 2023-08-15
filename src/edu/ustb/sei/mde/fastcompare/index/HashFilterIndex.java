@@ -2,7 +2,6 @@ package edu.ustb.sei.mde.fastcompare.index;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -12,14 +11,12 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 
 import org.eclipse.emf.compare.Comparison;
-import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.shash.Hash64;
 import edu.ustb.sei.mde.fastcompare.utils.CommonUtils;
-import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
 
 public class HashFilterIndex implements ObjectFilterIndex {
     private Map<Long, Set<EObject>> integrityMap;

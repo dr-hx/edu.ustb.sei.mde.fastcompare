@@ -28,6 +28,10 @@ public class MatchUtil {
         return m != null && m.getLeft() != PSEUDO_MATCHED_OBJECT && m.getRight() != PSEUDO_MATCHED_OBJECT && m.getOrigin() != PSEUDO_MATCHED_OBJECT;
     }
 
+    public static boolean isValidPartialMatch(Match m) {
+        return m == null || !(m.getLeft() == m.getRight() || m.getLeft() == m.getOrigin() || m.getRight() == m.getOrigin());
+    }
+
     public static Match simpleGetMatch(EObject object, Comparison inProgress) {
         return inProgress.getMatch(object);
     }

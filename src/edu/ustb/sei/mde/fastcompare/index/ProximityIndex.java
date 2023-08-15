@@ -115,7 +115,17 @@ public class ProximityIndex implements ObjectIndex {
 			resultMatch = findTheIdenticalSubtree(inProgress, eObj, Side.ORIGIN, Side.RIGHT, resultMatch, roots.right);
 		}
 
+		if(resultMatch!=null) {
+			makePseudoMatch(resultMatch);
+		}
+
 		return resultMatch;
+	}
+
+	private void makePseudoMatch(Match resultMatch) {
+		if(resultMatch.getLeft() == null) resultMatch.setLeft(MatchUtil.PSEUDO_MATCHED_OBJECT);
+		if(resultMatch.getRight() == null) resultMatch.setRight(MatchUtil.PSEUDO_MATCHED_OBJECT);
+		if(resultMatch.getOrigin() == null) resultMatch.setOrigin(MatchUtil.PSEUDO_MATCHED_OBJECT);
 	}
 
 	private Match findTheIdenticalSubtree(final Comparison inProgress, final EObject eObj, final Side eObjSide,
@@ -177,10 +187,11 @@ public class ProximityIndex implements ObjectIndex {
 				ElementIndexAdapter cAdapter = ElementIndexAdapter.getAdapter(cand);
 				if (depth == cAdapter.depth && cAdapter.getSubtreeIdentityHash() == subtreeKey) {
 					Match cMatch = inProgress.getMatch(cand);
-					// we probably have to consider the containment position in the future
 					if (cMatch == null) {
+						// if cand is not considered as matched, we can fill it to partial match
+						// we probably have to consider the containment position in the future
 						MatchUtil.setMatch(partialMatch, cand, sideToFind);
-						return cMatch;
+						return partialMatch;
 					}
 				}
 			}

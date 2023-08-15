@@ -482,10 +482,16 @@ public class EditionDistance implements DistanceFunction {
         this.orderChangeCoef = orderChangeCoef;
     }
 
+	private int distanceCount = 0;
+	public void dump() {
+		System.out.println("Distance "+distanceCount);
+		System.out.println("Idchecks "+idcheck);
+	}
     /**
 	 * {@inheritDoc}
 	 */
 	public double distance(Comparison inProgress, EObject a, EObject b, Boolean haveSameContainer) {
+		distanceCount ++;
 		this.uriDistance.setComparison(inProgress);
 		double maxDist = Math.max(getThresholdAmount(a), getThresholdAmount(b));
 		double measuredDist = new CountingDiffEngine(maxDist, this.fakeComparison, matcherConfigure)
@@ -496,10 +502,12 @@ public class EditionDistance implements DistanceFunction {
 		return measuredDist;
 	}
 
+	private int idcheck = 0;
 	/**
 	 * {@inheritDoc}
 	 */
 	public boolean areIdentic(Comparison inProgress, EObject a, EObject b) {
+		idcheck ++;
 		return new CountingDiffEngine(0, this.fakeComparison, matcherConfigure).measureDifferences(inProgress, a, b, null) == 0;
 	}
 

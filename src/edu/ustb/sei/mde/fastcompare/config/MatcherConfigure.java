@@ -1,9 +1,17 @@
 package edu.ustb.sei.mde.fastcompare.config;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Map.Entry;
+import java.util.function.Function;
 
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EClassifier;
+import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import edu.ustb.sei.mde.fastcompare.config.FeatureConfigure.AdaptiveFeatureConfigure;
@@ -22,32 +30,72 @@ import edu.ustb.sei.mde.fastcompare.utils.URIComputer;
  */
 public class MatcherConfigure {
     final static public EStructuralFeature CONTAINER_FEATURE = null;
-    // configurable tables
+    
+    /**
+     * Configurable weight tables.
+     * By default, we import from the weight tables from EMF compare.
+     * It is independed from matcher instances.
+     */
     protected WeightTable defaultWeightTable;
 
+    /**
+     * It tells the default feature hash functions.
+     * By default, it is created by the engine.
+     * Users may provide their owned table.
+     * It is independed from matcher instances.
+     */
     protected SHasherTable defaultFeatureSHasherTable;
 
-    protected AdaptiveFeatureConfigure adaptiveFeatureConfigure;
+    /**
+     * It is used to generate default feature configure. 
+     * It is not intended to be replaced by developers.
+     * It is independed from matcher instances.
+     */
+    private AdaptiveFeatureConfigure adaptiveFeatureConfigure;
 
+    /**
+     * It is used by equality helper to compute whether two eObjects are matched.
+     * It may be null.
+     * It is independed from matcher instances.
+     */
     protected EqualityHelperExtension equalityHelperExtension;
 
-    protected IEqualityHelper equalityHelper;
+    /**
+     * A provider to create equality helper that is used to compute whether two values are matched.
+     * It is independed from matcher instances.
+     */
+    protected Function<MatcherConfigure, IEqualityHelper> equalityHelperProvider;
 
-    // configure maps
+    /**
+     * The class map tells the class configures.
+     * Each class configure can tell local feature configures.
+     * It is independed from matcher instances.
+     */
     protected Map<EClass, ClassConfigure> classConfigureMap = new LinkedHashMap<>(32);
 
+    /**
+     * The map tells the global feature configures.
+     * Because a feature may be inherited by many classes, the gloabl map give this feature a common configure.
+     * It is independed from matcher instances.
+     */
     protected Map<EStructuralFeature, FeatureConfigure> globalFeatureConfigureMap = new LinkedHashMap<>(32);
 
     private SimpleLRUCache<EClass, ClassConfigure> oneShotClassConfCache = new SimpleLRUCache<>();
-
-    private FeatureFilter featureFilter = null;
 
     private URIComputer uriComputer;
 
     private double defaultSimThreshold = 0.5;
 
-    private DistanceFunction distanceFunction;
+    /**
+     * The function depends on matcher instances.
+     * It should be created/reset for each matcher instance.
+     */
+    protected DistanceFunction distanceFunction;
 
+    /**
+     * The hasher used to compute element hashes (s-hash and i-hash).
+     * It is independent from matcher instances.
+     */
     private Hasher elementHasher;
 
     private boolean useIdentityHash = false;
@@ -57,7 +105,7 @@ public class MatcherConfigure {
         this.uriComputer = new URIComputer();
         this.defaultWeightTable = new EcoreWeightTable();
 
-        this.equalityHelper = new EqualityHelper(new AutoLRUCache<>(4096, 4096, 0.75f), this);
+        this.equalityHelperProvider = (c) -> new EqualityHelper(new AutoLRUCache<>(4096, 4096, 0.75f), c);
         this.distanceFunction = new EditionDistance(this);
         
         this.defaultFeatureSHasherTable = SHasherTable.makeDefaultSHasherTable(this);
@@ -70,7 +118,7 @@ public class MatcherConfigure {
     }
 
     public boolean isUsingSubtreeHash() {
-        return useIdentityHash && useSubtreeHash;
+        return useSubtreeHash;
     }
 
     public void setUseIdentityHash(boolean useIdentityHash) {
@@ -78,12 +126,7 @@ public class MatcherConfigure {
     }
 
     public void setUseSubtreeHash(boolean useSubtreeHash) {
-        if(useSubtreeHash) {
-            this.useIdentityHash = true;
-            this.useSubtreeHash = true;
-        } else {
-            this.useSubtreeHash = false;
-        }
+        this.useSubtreeHash = useSubtreeHash;
     }
 
     public Hasher getElementHasher() {
@@ -111,11 +154,11 @@ public class MatcherConfigure {
     }
 
     public IEqualityHelper getEqualityHelper() {
-        return equalityHelper;
+        return equalityHelperProvider.apply(this);
     }
 
-    public void setEqualityHelper(IEqualityHelper equalityHelper) {
-        this.equalityHelper = equalityHelper;
+    public void setEqualityHelperProvider(Function<MatcherConfigure, IEqualityHelper> equalityHelperProvider) {
+        this.equalityHelperProvider = equalityHelperProvider;
     }
 
     public FeatureConfigure getOrCreateGlobalFeatureConfigure(EStructuralFeature feature) {
@@ -151,6 +194,7 @@ public class MatcherConfigure {
     }
 
     public FeatureFilter getFeatureFilter() {
+        FeatureFilter featureFilter;
         featureFilter = new FeatureFilter(this);
         return featureFilter;
     }
@@ -182,4 +226,27 @@ public class MatcherConfigure {
         return configure;
     }
 
+    public void loadThresholds(List<EPackage> metamodels, File thresholdFile) {
+        try(FileInputStream input = new FileInputStream(thresholdFile)) {
+            Properties properties = new Properties();
+            properties.load(input);
+            for(Entry<Object,Object> entry : properties.entrySet()) {
+                EClass clazz = resolveClass(metamodels, entry.getKey().toString());
+                if(clazz != null) {
+                    Double t = Double.parseDouble(entry.getValue().toString());
+                    getClassConfigure(clazz).setSimThreshold(t);
+                }
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private EClass resolveClass(List<EPackage> metamodels, String name) {
+        for(EPackage p : metamodels) {
+            EClassifier c = p.getEClassifier(name);
+            if(c instanceof EClass) return (EClass) c;
+        }
+        return null;
+    } 
 }

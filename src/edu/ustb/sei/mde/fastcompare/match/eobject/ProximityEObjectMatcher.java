@@ -148,7 +148,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		} else 
 			adapter.similarityHash = Hash64.ZERO_HASH;
 		
-		if(configure.isUsingIdentityHash())
+		if(configure.isUsingIdentityHash() || configure.isUsingSubtreeHash())
 			adapter.localIdentityHash = hasher.computeIHash(next);
 
 		return adapter;
@@ -317,7 +317,10 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		assert cSide != aSide;
 
 		// sub-tree match
-		if(coarseGainedMatch(comparison, partialMatchOfA, a, aSide, bSide, cSide, roots)) return true;
+		partialMatchOfA = coarseGainedMatch(comparison, partialMatchOfA, a, aSide, bSide, cSide, roots);
+		assert MatchUtil.isValidPartialMatch(partialMatchOfA);
+		if(MatchUtil.isFullMatch(partialMatchOfA)) 
+			return true;
 
 		// fine-gained matching
 		okToMatch = fineGainedMatch(comparison, partialMatchOfA, a, aSide, bSide, cSide, createUnmatches);
@@ -325,7 +328,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		return okToMatch;
 	}
 
-	private boolean coarseGainedMatch(Comparison comparison, Match partialMatchOfA, EObject a, Side aSide, Side bSide, Side cSide, 
+	private Match coarseGainedMatch(Comparison comparison, Match partialMatchOfA, EObject a, Side aSide, Side bSide, Side cSide, 
 		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
 		// find subtrees in bSide and cSide
 		// if bSubtree == null && cSubtree == null, then do nothing
@@ -341,14 +344,14 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 			//    if partialMatchOfA == null && result != partialMatchOfA, it is a new match or a partial match from other sides
 			//      for a new match, createNewMatch
 			//      otherwise, fill from the side of result (either bSide or cSide)
-			boolean unmatchedB = MatchUtil.isMatched(partialMatchOfA, bSide);
+			boolean unmatchedB = !MatchUtil.isMatched(partialMatchOfA, bSide);
 			
 			Match result = index.findIdenticalSubtrees(comparison, a, aSide, partialMatchOfA, roots);
 			
 			if(partialMatchOfA == null) {
 				if(result == null) {
 					// no subtree match is found
-					return false;
+					return null;
 				} else {
 					if(result.eContainer() == null) {
 						// this is a new match
@@ -359,13 +362,14 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 						// fillSubtreeMatch(result, aSide)
 						fillSubtreeMatches(comparison, result, aSide, roots);
 					}
-					return MatchUtil.isFullMatch(result);
+					return result;
 				}
 			} else {
 				// in this case, result will not be null
 				// we must check if the partial match is changed
 				// if changed, fill b or c
 				// fillSubtreeMatch(result, bSide) or fillSubtreeMatch(result, cSide)
+				assert result != null;
 				ObjectIndex.Side sideToFill = null;
 				if(unmatchedB) {
 					if(MatchUtil.isMatched(result, bSide)) sideToFill = bSide;
@@ -374,12 +378,13 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 				}
 
 				if(sideToFill != null) {
+					assert MatchUtil.isFullMatch(result);
 					fillSubtreeMatches(comparison, result, sideToFill, roots);
-					return true;
+					return result;
 				} else 
-					return false;
+					return result;
 			}
-		} else return false;
+		} else return partialMatchOfA;
 	}
 
 	// at this point, we know that sideToFile is sub-tree-equal to one of the other two sides.
