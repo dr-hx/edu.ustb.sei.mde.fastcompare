@@ -1,8 +1,8 @@
 package edu.ustb.sei.mde.fastcompare.shash;
 
-public class Hash64 {
-    final public long hash;
-    final public int bitCounts;
+public class Hash64 implements SimHashValue {
+    final private long hash;
+    final private int bitCounts;
     
     public Hash64(long h) {
         this.hash = h;
@@ -52,5 +52,10 @@ public class Hash64 {
         x = (x & m16) + ((x >> 16) & m16); // put count of each 32 bits into those 32 bits
         x = (x & m32) + ((x >> 32) & m32); // put count of each 64 bits into those 64 bits
         return (int) x;
+    }
+
+    @Override
+    public double similarity(SimHashValue value) {
+        return Hash64.similarity(this, (Hash64)value);
     }
 }

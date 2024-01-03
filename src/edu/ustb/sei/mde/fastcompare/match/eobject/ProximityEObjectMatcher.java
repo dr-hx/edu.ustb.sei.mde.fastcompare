@@ -12,7 +12,6 @@ import edu.ustb.sei.mde.fastcompare.index.ByTypeIndex;
 import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapter;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex.Side;
-import edu.ustb.sei.mde.fastcompare.shash.Hash64;
 import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
 import edu.ustb.sei.mde.fastcompare.utils.Triple;
 
@@ -146,7 +145,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		if(configure.shouldDoSimHash(next.eClass())) {
 			adapter.similarityHash = hasher.computeSHash(next);
 		} else 
-			adapter.similarityHash = Hash64.ZERO_HASH;
+			adapter.similarityHash = hasher.zeroSHash();
 		
 		if(configure.isUsingIdentityHash() || configure.isUsingSubtreeHash())
 			adapter.localIdentityHash = hasher.computeIHash(next);

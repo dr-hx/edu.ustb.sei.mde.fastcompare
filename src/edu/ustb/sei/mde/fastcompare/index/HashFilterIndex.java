@@ -15,13 +15,13 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
-import edu.ustb.sei.mde.fastcompare.shash.Hash64;
+import edu.ustb.sei.mde.fastcompare.shash.SimHashValue;
 import edu.ustb.sei.mde.fastcompare.utils.CommonUtils;
 
 public class HashFilterIndex implements ObjectFilterIndex {
     private Map<Long, Set<EObject>> integrityMap;
     // private Map<Long, Set<EObject>> subtreeIntegrityMap;
-    private Map<Hash64, Set<EObject>> similarityMap;
+    private Map<SimHashValue, Set<EObject>> similarityMap;
     private Set<EObject> allObjects;
     private final Function<EObject, Double> computeThresholdAmount;
     private final MatcherConfigure matcherConfigure;
@@ -66,18 +66,18 @@ public class HashFilterIndex implements ObjectFilterIndex {
                 Set<EObject> candidates = integrityMap.getOrDefault(idhash, Collections.emptySet());
                 return candidates;
             } else {
-                Hash64 shash = eObjAdapter.similarityHash;
+                SimHashValue shash = eObjAdapter.similarityHash;
                 Set<EObject> candidates = integrityMap.getOrDefault(shash, Collections.emptySet());
                 return candidates;
             }
         } else {
             double minSim = this.matcherConfigure.getClassConfigure(eObj.eClass()).getSimThreshold();
             double containerDiff = getContainerSimilarityRatio(eObj);
-            Hash64 shash = eObjAdapter.similarityHash;
+            SimHashValue shash = eObjAdapter.similarityHash;
             LinkedList<EObject> result = new LinkedList<>();
-            for (Entry<Hash64, Set<EObject>> bucket : similarityMap.entrySet()) {
-                Hash64 bhash = bucket.getKey();
-                double sim = Hash64.similarity(shash, bhash);
+            for (Entry<SimHashValue, Set<EObject>> bucket : similarityMap.entrySet()) {
+                SimHashValue bhash = bucket.getKey();
+                double sim = SimHashValue.similarity(shash, bhash);
                 if(sim >= minSim) {
                     if(candidateContainer == null) { // unknown
                         result.addAll(bucket.getValue());

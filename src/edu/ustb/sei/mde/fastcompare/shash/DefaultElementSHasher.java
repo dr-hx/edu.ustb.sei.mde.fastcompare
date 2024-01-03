@@ -12,7 +12,7 @@ import edu.ustb.sei.mde.fastcompare.config.FeatureConfigure;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.config.WeightTable;
 
-public class DefaultElementSHasher implements ElementSHasher {
+public class DefaultElementSHasher implements ElementSHasher<Hash64> {
     protected MatcherConfigure configure;
     protected int[] bitArray;
 
@@ -53,7 +53,7 @@ public class DefaultElementSHasher implements ElementSHasher {
 
     @Override
     @SuppressWarnings("unchecked")
-    public long hash(EObject element) {
+    public Hash64 hash(EObject element) {
         Arrays.fill(bitArray, 0, 64, 0);
         final EClass clazz = element.eClass();
         final ClassConfigure classConfigure = configure.getClassConfigure(clazz);
@@ -71,7 +71,12 @@ public class DefaultElementSHasher implements ElementSHasher {
                 }
             }
         }
-        return toHash(bitArray);
+        return new Hash64(toHash(bitArray));
+    }
+
+    @Override
+    public Hash64 zeroSHash() {
+        return Hash64.ZERO_HASH;
     }
     
 }

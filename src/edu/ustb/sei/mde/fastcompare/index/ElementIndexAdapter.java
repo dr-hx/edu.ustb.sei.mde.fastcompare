@@ -6,7 +6,7 @@ import org.eclipse.emf.common.notify.impl.AdapterImpl;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import edu.ustb.sei.mde.fastcompare.shash.Hash64;
+import edu.ustb.sei.mde.fastcompare.shash.SimHashValue;
 import edu.ustb.sei.mde.fastcompare.utils.CommonUtils;
 
 /**
@@ -16,7 +16,7 @@ public class ElementIndexAdapter extends AdapterImpl {
     private static final long INVALID_IHASH = 0xF000000000000000L;
 
     public int depth = 0;
-    public Hash64 similarityHash = null;
+    public SimHashValue similarityHash = null;
     public long localIdentityHash = INVALID_IHASH;
     private long treeIdentityHash = INVALID_IHASH;
 
