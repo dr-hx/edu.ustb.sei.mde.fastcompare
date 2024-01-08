@@ -3,10 +3,16 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 import java.util.zip.CRC32;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.compare.CompareFactory;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.match.resource.StrategyResourceMatcher;
+import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.EcorePackage;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.match.eobject.EditionDistance;
@@ -15,14 +21,19 @@ import edu.ustb.sei.mde.fastcompare.shash.SHashFunction;
 
 public class App {
     public static void main(String[] args) throws Exception {
-        java.util.zip.CRC32 crc  = new CRC32();
+        ResourceSet set = new ResourceSetImpl();
+        set.getPackageRegistry().put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
+        set.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new XMIResourceFactoryImpl());
+        Resource res = set.getResource(URI.createFileURI("testdata/Ecore.ecore"), true);
+        System.out.println(res);
+        // java.util.zip.CRC32 crc  = new CRC32();
 
-        crc.update("abcdef".getBytes());
-        System.out.println(crc.getValue());
-        crc.reset();
-        crc.update("abc".getBytes());
-        crc.update("def".getBytes());
-        System.out.println(crc.getValue());
+        // crc.update("abcdef".getBytes());
+        // System.out.println(crc.getValue());
+        // crc.reset();
+        // crc.update("abc".getBytes());
+        // crc.update("def".getBytes());
+        // System.out.println(crc.getValue());
 
         // testHaveSameContainer();
     }
