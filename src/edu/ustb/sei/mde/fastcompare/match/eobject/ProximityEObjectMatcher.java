@@ -192,7 +192,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	 * @param monitor
 	 *            monitor to track progress.
 	 */
-	private void matchIndexedObjects(Comparison comparison, Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
+	protected void matchIndexedObjects(Comparison comparison, Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
 		Iterable<EObject> todo = index.getValuesStillThere(Side.LEFT);
 		while (todo.iterator().hasNext()) {
 			todo = matchList(comparison, todo, true, roots);
@@ -241,8 +241,12 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	 *            a monitor to track progress.
 	 * @return the list of EObjects which could not be processed for some reason.
 	 */
-	private Iterable<EObject> matchList(Comparison comparison, Iterable<EObject> todoList, boolean createUnmatches,
+	protected Iterable<EObject> matchList(Comparison comparison, Iterable<EObject> todoList, boolean createUnmatches,
 		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
+			// we may adopt a top-down algorithm here to match by subtree id from roots
+			// the algorithm should be Breadth-first
+			// for unmatched children, we adopt fine-gained algorithm
+
 		Set<EObject> remainingResult = Sets.newLinkedHashSet();
 		List<EObject> requiredContainers = Lists.newArrayList();
 

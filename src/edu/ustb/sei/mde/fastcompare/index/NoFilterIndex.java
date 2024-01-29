@@ -1,5 +1,6 @@
 package edu.ustb.sei.mde.fastcompare.index;
 
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -17,12 +18,12 @@ public class NoFilterIndex implements ObjectFilterIndex {
 
     @Override
     public Iterable<EObject> allCandidates() {
-        return allObjects;
+        return new LinkedHashSet<>(allObjects);
     }
 
     @Override
     public Iterable<EObject> filterCandidates(Comparison inProgress, EObject eObj, Optional<EObject> candidateContainer, double threshold) {
-        return allObjects;
+        return new LinkedHashSet<>(allObjects);
     }
 
     @Override

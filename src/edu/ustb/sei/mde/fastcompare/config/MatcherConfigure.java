@@ -100,6 +100,7 @@ public class MatcherConfigure {
 
     private boolean useIdentityHash = false;
     private boolean useSubtreeHash = false;
+    private boolean useSimHash = true;
 
     public MatcherConfigure() {
         this.uriComputer = new URIComputer();
@@ -127,6 +128,10 @@ public class MatcherConfigure {
 
     public void setUseSubtreeHash(boolean useSubtreeHash) {
         this.useSubtreeHash = useSubtreeHash;
+    }
+
+    public void setUseSimHash(boolean useSimHash) {
+        this.useSimHash = useSimHash;
     }
 
     public Hasher getElementHasher() {
@@ -203,7 +208,11 @@ public class MatcherConfigure {
         return uriComputer;
     }
 
-    public boolean shouldDoSimHash(EClass clazz) {
+    final public boolean shouldDoSimHash(EClass clazz) {
+        return useSimHash && shouldDoSimHashForEClass(clazz);
+    }
+
+    protected boolean shouldDoSimHashForEClass(EClass clazz) {
         return true;
     }
 

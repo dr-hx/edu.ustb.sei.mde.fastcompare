@@ -14,6 +14,7 @@ import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.ecore.EObject;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
 import edu.ustb.sei.mde.fastcompare.config.ClassConfigure;
@@ -306,8 +307,8 @@ public class ProximityIndex implements ObjectIndex {
 			final Side sideToFind, final boolean shouldDoubleCheck) {
 		final ObjectFilterIndex storageToSearchFor = getStorageToSearchFor(sideToFind);
 
-		Iterable<EObject> cand = storageToSearchFor.filterCandidates(inProgress, eObj, null, 1.0);
-		for (EObject fastCheck : cand) {
+		Iterable<EObject> idenCands = storageToSearchFor.filterCandidates(inProgress, eObj, null, 1.0);
+		for (EObject fastCheck : idenCands) {
 			if (!readyForThisTestWithoutCache(inProgress, fastCheck)) {
 			} else {
 				if (meter.areIdentic(inProgress, eObj, fastCheck)) {
@@ -335,14 +336,21 @@ public class ProximityIndex implements ObjectIndex {
 			canCache = false;
 		}
 
-		Iterable<EObject> cand2 = storageToSearchFor.filterCandidates(inProgress, eObj,
+		Iterable<EObject> simCands = storageToSearchFor.filterCandidates(inProgress, eObj,
 				Optional.ofNullable(matchedContainer), minSim);
+		simCands = Iterables.filter(simCands, (o) ->{
+			Match m = inProgress.getMatch(o);
+			if(m != null) {
+				return !MatchUtil.isMatched(m, eObjSide); // since we want to find the match of eObjSide, m.eObjSide must be empty
+			}
+			return true;
+		});
 
 		double bestDistance = Double.MAX_VALUE;
 		EObject bestObject = null;
 
 		if (shouldDoubleCheck) {
-			for (EObject potentialClosest : cand2) {
+			for (EObject potentialClosest : simCands) {
 				double dist = meter.distance(inProgress, eObj, potentialClosest,
 						matchedContainer == potentialClosest.eContainer(), true);
 				if (dist < bestDistance) {
@@ -374,7 +382,7 @@ public class ProximityIndex implements ObjectIndex {
 				}
 			}
 		} else {
-			for (EObject potentialClosest : cand2) {
+			for (EObject potentialClosest : simCands) {
 				double dist;
 				dist = meter.distance(inProgress, eObj, potentialClosest,
 						matchedContainer == potentialClosest.eContainer(), canCache);
