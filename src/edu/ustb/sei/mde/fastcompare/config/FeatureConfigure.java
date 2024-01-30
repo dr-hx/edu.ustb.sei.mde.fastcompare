@@ -53,7 +53,7 @@ public abstract class FeatureConfigure {
 
         @Override
         public int getPositiveHashWeight() {
-            return 10;
+            return getWeight();
         }
 
         @Override

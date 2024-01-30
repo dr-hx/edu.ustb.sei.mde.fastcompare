@@ -43,8 +43,8 @@ public class TestEObjectMatcher {
         buildRight();
         buildOriginal();
         configure = new MatcherConfigure();
-        configure.setUseSubtreeHash(true);
-        configure.setUseSimHash(false);
+        configure.setUseSubtreeHash(false);
+        configure.setUseSimHash(true);
         matcher = new ProximityEObjectMatcher(configure);
     }
 

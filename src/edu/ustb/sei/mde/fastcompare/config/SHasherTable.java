@@ -54,6 +54,8 @@ public class SHasherTable {
         table.byTypeHasherMap.put(Float.class, new FloatHashFunction());
         table.byTypeHasherMap.put(float.class, new FloatHashFunction());
 
+        table.byTypeHasherMap.put(Boolean.class, new ObjectHashFunction());
+        table.byTypeHasherMap.put(boolean.class, new ObjectHashFunction());
 
         table.byTypeHasherMap.put(String.class, new StringHashFunction());
         
@@ -82,6 +84,12 @@ public class SHasherTable {
     public void putFeatureHash(EStructuralFeature feature, SHashFunction<?> hash) {
         this.featureHashMap.put(feature, hash);
     }
+
+    final private boolean isBasicType(Class<?> cls) {
+        return cls.isPrimitive() || 
+            cls == String.class || cls == Boolean.class || cls == Character.class ||
+            Number.class.isAssignableFrom(cls);
+    }
     
     public SHashFunction<?> getHashFunction(EStructuralFeature feature) {
         SHashFunction<?> hash = getFeatureHashFunction(feature);
@@ -94,7 +102,7 @@ public class SHasherTable {
                     jType = Object.class;
                 } else {
                     jType = eType.getInstanceClass();
-                    if(jType == null || jType.isPrimitive() == false)
+                    if(jType == null || !isBasicType(jType))
                         jType = null;
                 }
             } else {

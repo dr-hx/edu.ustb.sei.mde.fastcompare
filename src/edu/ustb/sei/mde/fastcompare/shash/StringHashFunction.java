@@ -1,11 +1,17 @@
 package edu.ustb.sei.mde.fastcompare.shash;
 
+import org.eclipse.emf.ecore.EStructuralFeature;
 
 public class StringHashFunction implements SHashFunction<String> {
 
     @Override
     public long rawHash(String value) {
         return bigramString(value);
+    }
+
+    @Override
+    public long hash(EStructuralFeature feature, String value) {
+        return rawHash(value);
     }
     
 

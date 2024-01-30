@@ -2,6 +2,7 @@ package edu.ustb.sei.mde.fastcompare.shash;
 
 import java.util.Arrays;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -43,7 +44,7 @@ public class DefaultElementSHasher implements ElementSHasher<Hash64> {
         long hash = 0;
         long bit = 1L;
         for(int i = 0; i < 64; i++) {
-            if(array[0] > 0) {
+            if(array[i] > 0) {
                 hash |= bit;
             }
             bit <<= 1;
@@ -64,14 +65,41 @@ public class DefaultElementSHasher implements ElementSHasher<Hash64> {
                 final Object value = element.eGet(entry.getKey());
                 if(value != null) {
                     long featureHash = shasher.hash(entry.getKey(), value);
-                    if(featureConfigure.getPositiveHashWeight() >= WeightTable.MAJOR) {
+                    if(featureConfigure.getWeight() >= WeightTable.MAJOR) {
                         featureHash = enhance(featureHash);
                     }
                     merge(bitArray, featureHash, featureConfigure.getPositiveHashWeight(), featureConfigure.getNegativeHashWeight());
                 }
             }
         }
-        return new Hash64(toHash(bitArray));
+        Hash64 h = new Hash64(toHash(bitArray));
+        // if(h.equals(zeroSHash())) {
+        //     System.out.println("Produce zero hash for " + element);
+        //     dumpHashing(element);
+        // }
+        return h;
+    }
+
+    private void dumpHashing(EObject element) {
+        Arrays.fill(bitArray, 0, 64, 0);
+        final EClass clazz = element.eClass();
+        final ClassConfigure classConfigure = configure.getClassConfigure(clazz);
+        for(Entry<EStructuralFeature, FeatureConfigure> entry : classConfigure.getConcernedFeatures()) {
+            final FeatureConfigure featureConfigure = entry.getValue();
+            final SHashFunction<Object> shasher = (SHashFunction<Object>) featureConfigure.getShasher();
+            if(!featureConfigure.isNoShashing() && shasher != null) {
+                final Object value = element.eGet(entry.getKey());
+                if(value != null) {
+                    long featureHash = shasher.hash(entry.getKey(), value);
+                    if(featureConfigure.getWeight() >= WeightTable.MAJOR) {
+                        featureHash = enhance(featureHash);
+                    }
+                    merge(bitArray, featureHash, featureConfigure.getPositiveHashWeight(), featureConfigure.getNegativeHashWeight());
+                    System.out.println(String.format("feature=%s, value=%s, featureHash=%d, mergedArray=%s", entry.getKey().getName(), value.toString(), featureHash, 
+                        Arrays.stream(bitArray).boxed().reduce("", (l,r)->l+","+r, (l,r)->l+","+r)));
+                }
+            }
+        }
     }
 
     @Override
