@@ -40,7 +40,7 @@ public interface DistanceFunction {
 	 * 		the threshold
 	 */
     double getThresholdAmount(EObject eObj);
-
+	double getContainerThresholdRatio(EObject eObj);
     /**
      * Check that two objects are equals from the distance function point of view
      * (distance should be 0). You should prefer this method when you just want 

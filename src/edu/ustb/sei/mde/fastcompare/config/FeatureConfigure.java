@@ -24,10 +24,10 @@ public abstract class FeatureConfigure {
 
     static public class AdaptiveFeatureConfigure extends FeatureConfigure {
         private EStructuralFeature currentFeature;
-        protected WeightTable defaultWeight;
+        protected IWeightTable defaultWeight;
         protected SHasherTable defaultFeatureSHasher; 
 
-        public AdaptiveFeatureConfigure(WeightTable weightTable, SHasherTable shasherTable) {
+        public AdaptiveFeatureConfigure(IWeightTable weightTable, SHasherTable shasherTable) {
             this.defaultWeight = weightTable;
             this.defaultFeatureSHasher = shasherTable;
         }

@@ -5,7 +5,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
-public class WeightTable {
+public class WeightTable implements IWeightTable {
     /***
 	 * Something not impacting the object identity unless it adds up a lot.
 	 */
@@ -46,6 +46,7 @@ public class WeightTable {
 	 */
 	protected int attributeChangeCoef = SIGNIFICANT;
 
+	@Override
 	public int getDefaultWeight(EStructuralFeature feature) {
         if (irrelevant(feature)) {
 			return 0;
@@ -67,15 +68,18 @@ public class WeightTable {
 		return found.intValue();
     }
 
+	@Override
 	public int getDefaultParentWeight(EObject a) {
 		return SIGNIFICANT;
 	}
 
+	@Override
 	public int getDefaultContainingFeatureWeight(EObject a) {
 		return NORMAL;
 	}
 
-    public boolean irrelevant(EStructuralFeature feat) {
+    @Override
+	public boolean irrelevant(EStructuralFeature feat) {
 		if (feat instanceof EAttribute) {
 			return feat.isDerived() || feat.isTransient();
 		} else {

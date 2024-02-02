@@ -1,6 +1,8 @@
 package edu.ustb.sei.mde.fastcompare.match.eobject;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -511,6 +513,31 @@ public class EditionDistance implements DistanceFunction {
 		return new CountingDiffEngine(0, this.fakeComparison, matcherConfigure).measureDifferences(inProgress, a, b, null) == 0;
 	}
 
+	private Map<EClass, Double> containerSimilarityRatioMap = new HashMap<>();
+	public double getContainerThresholdRatio(EObject eObj) {
+		EClass clazz = eObj.eClass();
+		
+		Double ratio = containerSimilarityRatioMap.get(clazz);
+		if(ratio == null) {
+			double max = 0.0;
+			ClassConfigure classConfigure = this.matcherConfigure.getClassConfigure(clazz);
+			Iterable<Entry<EStructuralFeature, FeatureConfigure>> featureConfigures = classConfigure.getConcernedFeatures();
+	
+			for (Entry<EStructuralFeature, FeatureConfigure> pair : featureConfigures) {
+				FeatureConfigure configure = pair.getValue();
+				int featureWeight = configure.getWeight();
+				if (featureWeight != 0) {
+					max += featureWeight;
+				}
+			}
+	
+			max = max + classConfigure.getContainingFeatureWeight(eObj);
+			int containerWeight = classConfigure.getParentWeight(eObj);
+			ratio = ((double) containerWeight) / max;
+			containerSimilarityRatioMap.put(clazz, ratio);
+		}
+		return ratio;
+	}
 
 	public double getThresholdAmount(EObject eObj) {
 		Double result = thresholdAmountCache.get(eObj);
@@ -540,7 +567,7 @@ public class EditionDistance implements DistanceFunction {
 	
 			// max = max + (locationChangeCoef *
 			// weightProviderRegistry.getHighestRankingWeightProvider(eObj.eClass().getEPackage()).getParentWeight(eObj));
-			max = max + classConfigure.getParentWeight(eObj);
+			max = max + classConfigure.getContainingFeatureWeight(eObj);
 	
 			result = max * getThresholdRatio(nbFeatures);
 

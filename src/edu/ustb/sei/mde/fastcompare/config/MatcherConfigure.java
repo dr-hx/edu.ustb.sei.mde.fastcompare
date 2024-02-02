@@ -41,7 +41,7 @@ public class MatcherConfigure {
      * By default, we import from the weight tables from EMF compare.
      * It is independed from matcher instances.
      */
-    protected WeightTable defaultWeightTable;
+    protected IWeightTable defaultWeightTable;
 
     /**
      * It tells the default feature hash functions.
@@ -281,7 +281,7 @@ public class MatcherConfigure {
         return configure;
     }
 
-    public WeightTable getDefaultWeightTable() {
+    public IWeightTable getDefaultWeightTable() {
         return defaultWeightTable;
     }
 

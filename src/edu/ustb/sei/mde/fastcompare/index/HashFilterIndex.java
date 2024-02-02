@@ -2,6 +2,7 @@ package edu.ustb.sei.mde.fastcompare.index;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class HashFilterIndex implements ObjectFilterIndex {
     // private Map<Long, Set<EObject>> subtreeIntegrityMap;
     private Map<SimHashValue, Set<EObject>> similarityMap;
     private Set<EObject> allObjects;
-    private final Function<EObject, Double> computeThresholdAmount;
+    private final Function<EObject, Double> computeContainerThresholdRatio;
     private final MatcherConfigure matcherConfigure;
 
     public HashFilterIndex(MatcherConfigure configure) {
@@ -40,7 +41,7 @@ public class HashFilterIndex implements ObjectFilterIndex {
         similarityMap = new HashMap<>();
         allObjects = ObjectFilterIndex.createSet(null);
         this.matcherConfigure = configure;
-        this.computeThresholdAmount = configure.getDistanceFunction()::getThresholdAmount;
+        this.computeContainerThresholdRatio = configure.getDistanceFunction()::getContainerThresholdRatio;
     }
 
 
@@ -48,13 +49,13 @@ public class HashFilterIndex implements ObjectFilterIndex {
         return new LinkedHashSet<>(allObjects);
     }
 
-    public double getContainerSimilarityRatio(EObject object) {
-        EClass clazz = object.eClass();
-        double total = computeThresholdAmount.apply(object);
-        int containerWeight = this.matcherConfigure.getClassConfigure(clazz).getParentWeight(object);
-        double ratio = containerWeight / total;
-		return ratio;
-	}
+    // public double getContainerSimilarityRatio(EObject object) {
+    //     EClass clazz = object.eClass();
+    //     double total = computeThresholdAmount.apply(object);
+    //     int containerWeight = this.matcherConfigure.getClassConfigure(clazz).getParentWeight(object);
+    //     double ratio = containerWeight / total;
+	// 	return ratio;
+	// }
 
     public Iterable<EObject> filterCandidates(Comparison inProgress, EObject eObj, Optional<EObject> candidateContainer, double threshold) {
         ElementIndexAdapter eObjAdapter = ElementIndexAdapter.getAdapter(eObj);
@@ -71,24 +72,30 @@ public class HashFilterIndex implements ObjectFilterIndex {
                 return candidates;
             }
         } else {
-            double minSim = this.matcherConfigure.getClassConfigure(eObj.eClass()).getSimThreshold();
-            double containerDiff = getContainerSimilarityRatio(eObj);
+            // double minSim = this.matcherConfigure.getClassConfigure(eObj.eClass()).getSimThreshold();
+            double containerDiff = this.computeContainerThresholdRatio.apply(eObj);
             SimHashValue shash = eObjAdapter.similarityHash;
             LinkedList<EObject> result = new LinkedList<>();
-            for (Entry<SimHashValue, Set<EObject>> bucket : similarityMap.entrySet()) {
-                SimHashValue bhash = bucket.getKey();
-                double sim = SimHashValue.similarity(shash, bhash);
-                if(sim >= minSim) {
-                    if(candidateContainer == null) { // unknown
-                        result.addAll(bucket.getValue());
-                    } else {
-                        EObject actualCandidateContainer = candidateContainer.orElse(null);
-                        for(EObject cand : bucket.getValue()) {
-                            if (actualCandidateContainer == cand.eContainer()) {
-                                result.add(cand);
-                            } else {
-                                if(sim >= (minSim + containerDiff)) {
+            Iterator<Entry<SimHashValue, Set<EObject>>> iter = similarityMap.entrySet().iterator();
+            while (iter.hasNext()) {
+                Entry<SimHashValue, Set<EObject>> bucket = iter.next();
+                if(bucket.getValue().isEmpty()) {
+                    iter.remove();
+                } else {
+                    SimHashValue bhash = bucket.getKey();
+                    double sim = SimHashValue.similarity(shash, bhash);
+                    if(sim >= threshold) {
+                        if(candidateContainer == null) { // unknown
+                            result.addAll(bucket.getValue());
+                        } else {
+                            EObject actualCandidateContainer = candidateContainer.orElse(null);
+                            for(EObject cand : bucket.getValue()) {
+                                if (actualCandidateContainer == cand.eContainer()) {
                                     result.add(cand);
+                                } else {
+                                    if(sim >= (threshold + containerDiff)) {
+                                        result.add(cand);
+                                    }
                                 }
                             }
                         }
@@ -105,7 +112,7 @@ public class HashFilterIndex implements ObjectFilterIndex {
         Set<EObject> list;
         if (integrityMap != null) {
             list = integrityMap.get(adapter.localIdentityHash);
-            if (list != null)
+            if (list != null) 
                 list.remove(eObj);
         }
         // TODO: we may not have to remove it

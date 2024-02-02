@@ -120,4 +120,9 @@ public class CachingDistanceFunction implements DistanceFunction {
 	public boolean haveSameContainer(Comparison inProgress, EObject a, EObject b) {
 		return meter.haveSameContainer(inProgress, a, b);
 	}
+
+	@Override
+	public double getContainerThresholdRatio(EObject eObj) {
+		return meter.getContainerThresholdRatio(eObj);
+	}
 }
