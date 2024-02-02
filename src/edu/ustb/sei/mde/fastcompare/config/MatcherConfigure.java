@@ -2,17 +2,22 @@ package edu.ustb.sei.mde.fastcompare.config;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Map.Entry;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.EcorePackage;
 
 import edu.ustb.sei.mde.fastcompare.config.FeatureConfigure.AdaptiveFeatureConfigure;
 import edu.ustb.sei.mde.fastcompare.match.EqualityHelper;
@@ -112,6 +117,92 @@ public class MatcherConfigure {
         this.defaultFeatureSHasherTable = SHasherTable.makeDefaultSHasherTable(this);
         this.adaptiveFeatureConfigure = new AdaptiveFeatureConfigure(defaultWeightTable, defaultFeatureSHasherTable);
         this.elementHasher = new Hasher(this);
+
+        initThresholds();
+        initIgnoredClasses();
+    }
+
+    protected Set<EClass> ignoredClasses = new HashSet<>();
+
+    protected void initIgnoredClasses() {
+        ignoredClasses.add(EcorePackage.eINSTANCE.getEGenericType());
+        ignoredClasses.add(EcorePackage.eINSTANCE.getEAnnotation());
+        ignoredClasses.add(EcorePackage.eINSTANCE.getEDataType());
+        ignoredClasses.add(EcorePackage.eINSTANCE.getEStringToStringMapEntry());
+    }
+
+    public boolean initThresholdsForPackage(EPackage ePackage, Consumer<MatcherConfigure> initializer) {
+        if(initializer == null) {
+            if("http://www.eclipse.org/uml2/5.0.0/UML".equals(ePackage.getNsURI())) {
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Abstraction")).setSimThreshold(0.70);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Activity")).setSimThreshold(0.6);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("ActivityFinalNode")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Actor")).setSimThreshold(0.55);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Association")).setSimThreshold(0.68);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("BehaviorExecutionSpecification")).setSimThreshold(0.70);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Class")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("ClassifierTemplateParameter")).setSimThreshold(0.70);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Collaboration")).setSimThreshold(0.55);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Component")).setSimThreshold(0.65);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("ControlFlow")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("DataType")).setSimThreshold(0.55);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("DecisionNode")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Dependency")).setSimThreshold(0.65);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("ExecutionOccurrenceSpecification")).setSimThreshold(0.70);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Extend")).setSimThreshold(0.70);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("FlowFinalNode")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("ForkNode")).setSimThreshold(0.62);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("GeneralOrdering")).setSimThreshold(0.65);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Generalization")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Include")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("InitialNode")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("InstanceValue")).setSimThreshold(0.65);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Interaction")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Interface")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("InterfaceRealization")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("JoinNode")).setSimThreshold(0.70);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Lifeline")).setSimThreshold(0.54);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Message")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("MessageOccurrenceSpecification")).setSimThreshold(0.70);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("OccurrenceSpecification")).setSimThreshold(0.65);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("OpaqueAction")).setSimThreshold(0.65);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Operation")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("PackageImport")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Parameter")).setSimThreshold(0.64);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Property")).setSimThreshold(0.70);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Realization")).setSimThreshold(0.65);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("TemplateParameter")).setSimThreshold(0.65);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Usage")).setSimThreshold(0.55);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("UseCase")).setSimThreshold(0.60);
+                this.getClassConfigure((EClass) ePackage.getEClassifier("Package")).setSimThreshold(0.40);
+
+                this.ignoredClasses.add((EClass) ePackage.getEClassifier("Comment"));
+                this.ignoredClasses.add((EClass) ePackage.getEClassifier("ExtensionPoint"));
+                this.ignoredClasses.add((EClass) ePackage.getEClassifier("InstanceSpecification"));
+                this.ignoredClasses.add((EClass) ePackage.getEClassifier("LiteralInteger"));
+                this.ignoredClasses.add((EClass) ePackage.getEClassifier("LiteralString"));
+                this.ignoredClasses.add((EClass) ePackage.getEClassifier("LiteralUnlimitedNatural"));
+                this.ignoredClasses.add((EClass) ePackage.getEClassifier("Model"));
+
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            initializer.accept(this);
+            return true;
+        }
+    }
+
+    protected void initThresholds() {
+        // init Ecore classes
+        this.getClassConfigure(EcorePackage.eINSTANCE.getEClass()).setSimThreshold(0.55);
+        this.getClassConfigure(EcorePackage.eINSTANCE.getEAttribute()).setSimThreshold(0.67);
+        this.getClassConfigure(EcorePackage.eINSTANCE.getEReference()).setSimThreshold(0.65);
+        this.getClassConfigure(EcorePackage.eINSTANCE.getEEnum()).setSimThreshold(0.45);
+        this.getClassConfigure(EcorePackage.eINSTANCE.getEEnumLiteral()).setSimThreshold(0.45);
+        this.getClassConfigure(EcorePackage.eINSTANCE.getEOperation()).setSimThreshold(0.55);
+        this.getClassConfigure(EcorePackage.eINSTANCE.getEPackage()).setSimThreshold(0.45);
     }
 
     public boolean isUsingIdentityHash() {
@@ -213,7 +304,7 @@ public class MatcherConfigure {
     }
 
     protected boolean shouldDoSimHashForEClass(EClass clazz) {
-        return true;
+        return !this.ignoredClasses.contains(clazz);
     }
 
     public double getDefaultSimThreshold() {

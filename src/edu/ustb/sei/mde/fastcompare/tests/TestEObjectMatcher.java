@@ -56,18 +56,18 @@ public class TestEObjectMatcher {
     private void buildOriginal() {
         origin = createEPackage("pkg1", (pkg)->{
             pkg.getEClassifiers().add(createEClass("cls1", (cls)->{
-                cls.getEAttributes().add(createEAttribute("att1", EcorePackage.Literals.ESTRING, 1, 1));
-                cls.getEAttributes().add(createEAttribute("att2", EcorePackage.Literals.EBOOLEAN, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att1", EcorePackage.Literals.ESTRING, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att2", EcorePackage.Literals.EBOOLEAN, 1, 1));
             }));
 
             pkg.getEClassifiers().add(createEClass("cls2", (cls)->{
-                cls.getEAttributes().add(createEAttribute("att1", EcorePackage.Literals.ESTRING, 1, 1));
-                cls.getEAttributes().add(createEAttribute("att2", EcorePackage.Literals.EBOOLEAN, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att1", EcorePackage.Literals.ESTRING, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att2", EcorePackage.Literals.EBOOLEAN, 1, 1));
             }));
 
             pkg.getEClassifiers().add(createEClass("cls3", (cls)->{
-                cls.getEAttributes().add(createEAttribute("att3", EcorePackage.Literals.EINT, 1, 1));
-                cls.getEAttributes().add(createEAttribute("att4", EcorePackage.Literals.EBOOLEAN, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att3", EcorePackage.Literals.EINT, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att4", EcorePackage.Literals.EBOOLEAN, 1, 1));
             }));
         });
     }
@@ -75,18 +75,18 @@ public class TestEObjectMatcher {
     private void buildLeft() {
         left = createEPackage("pkg1", (pkg)->{
             pkg.getEClassifiers().add(createEClass("cls1", (cls)->{
-                cls.getEAttributes().add(createEAttribute("att1", EcorePackage.Literals.ESTRING, 1, 1));
-                cls.getEAttributes().add(createEAttribute("att2", EcorePackage.Literals.EBOOLEAN, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att1", EcorePackage.Literals.ESTRING, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att2", EcorePackage.Literals.EBOOLEAN, 1, 1));
             }));
 
             pkg.getEClassifiers().add(createEClass("cls2", (cls)->{
-                cls.getEAttributes().add(createEAttribute("att1", EcorePackage.Literals.ESTRING, 1, 1));
-                cls.getEAttributes().add(createEAttribute("att2", EcorePackage.Literals.EBOOLEAN, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att1", EcorePackage.Literals.ESTRING, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att2", EcorePackage.Literals.EBOOLEAN, 1, 1));
             }));
 
             pkg.getEClassifiers().add(createEClass("cls3", (cls)->{
-                cls.getEAttributes().add(createEAttribute("att3", EcorePackage.Literals.EINT, 1, 1));
-                cls.getEAttributes().add(createEAttribute("att4", EcorePackage.Literals.EBOOLEAN, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att3", EcorePackage.Literals.EINT, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att4", EcorePackage.Literals.EBOOLEAN, 1, 1));
             }));
         });
     }
@@ -94,18 +94,18 @@ public class TestEObjectMatcher {
     private void buildRight() {
         right = createEPackage("pkg1", (pkg)->{
             pkg.getEClassifiers().add(createEClass("cls1", (cls)->{
-                cls.getEAttributes().add(createEAttribute("att1", EcorePackage.Literals.EINT, 1, 1));
-                cls.getEAttributes().add(createEAttribute("att2", EcorePackage.Literals.EBOOLEAN, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att1", EcorePackage.Literals.EINT, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att2", EcorePackage.Literals.EBOOLEAN, 1, 1));
             }));
 
             pkg.getEClassifiers().add(createEClass("cls2", (cls)->{
-                cls.getEAttributes().add(createEAttribute("att1", EcorePackage.Literals.ESTRING, 1, 1));
-                cls.getEAttributes().add(createEAttribute("att2", EcorePackage.Literals.EBOOLEAN, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att1", EcorePackage.Literals.ESTRING, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att2", EcorePackage.Literals.EBOOLEAN, 1, 1));
             }));
 
             pkg.getEClassifiers().add(createEClass("cls4", (cls)->{
-                cls.getEAttributes().add(createEAttribute("att3", EcorePackage.Literals.EINT, 1, 1));
-                cls.getEAttributes().add(createEAttribute("att4", EcorePackage.Literals.EBOOLEAN, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att3", EcorePackage.Literals.EINT, 1, 1));
+                cls.getEStructuralFeatures().add(createEAttribute("att4", EcorePackage.Literals.EBOOLEAN, 1, 1));
             }));
         });
     }

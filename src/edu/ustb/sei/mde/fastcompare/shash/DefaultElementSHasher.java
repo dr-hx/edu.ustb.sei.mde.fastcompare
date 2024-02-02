@@ -2,7 +2,6 @@ package edu.ustb.sei.mde.fastcompare.shash;
 
 import java.util.Arrays;
 import java.util.Map.Entry;
-import java.util.stream.Stream;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -72,7 +71,7 @@ public class DefaultElementSHasher implements ElementSHasher<Hash64> {
                 }
             }
         }
-        Hash64 h = new Hash64(toHash(bitArray));
+        final Hash64 h = new Hash64(toHash(bitArray));
         // if(h.equals(zeroSHash())) {
         //     System.out.println("Produce zero hash for " + element);
         //     dumpHashing(element);
