@@ -2,6 +2,7 @@ package edu.ustb.sei.mde.fastcompare.tests;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.compare.Comparison;
+import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -24,6 +25,7 @@ public class TestMatchEngine {
     @Before
     public void initEngine() {
         MatcherConfigure config = new MatcherConfigure();
+        config.setUseSubtreeHash(true);
         IEObjectMatcher matcher = new ProximityEObjectMatcher(config);
         engine = new DefaultMatchEngine(matcher, new DefaultComparisonFactory(config));
         resourceSet = new ResourceSetImpl();
@@ -43,10 +45,15 @@ public class TestMatchEngine {
     @Test
     public void testMutant0() {
         URI origin = URI.createFileURI("/source/Java/fastcompare/edu.ustb.sei.mde.fastcompare/testdata/Ecore_1218.ecore");
-        URI left = URI.createFileURI("/source/Java/fastcompare/edu.ustb.sei.mde.fastcompare/testdata/Ecore_1218.mutant0.ecore");
+        URI left = URI.createFileURI("/source/Java/fastcompare/edu.ustb.sei.mde.fastcompare/testdata/Ecore_1218.mutant3.ecore");
 
         Comparison result = engine.match(load(origin, left));
 
-        System.out.println(result);
+        result.getMatches().forEach(this::printMatch);
+    }
+
+    private void printMatch(Match m) {
+        System.out.println(m.getLeft() + "=>" + m.getRight());
+        m.getSubmatches().forEach(this::printMatch);
     }
 }

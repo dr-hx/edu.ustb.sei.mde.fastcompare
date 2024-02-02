@@ -164,35 +164,41 @@ public class ProximityIndex implements ObjectIndex {
 	private Match findIdenticalSubtree(Comparison inProgress, EObject eObj, Side passedObjectSide, Side sideToFind, Match partialMatch,
 			Iterable<EObject> candidates) {
 		ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(eObj);
+		if(adapter == null) return null;
+
 		final int depth = adapter.depth;
 		final long subtreeKey = adapter.getSubtreeIdentityHash();
 
 		if (partialMatch == null) {
 			for (EObject cand : candidates) {
 				ElementIndexAdapter cAdapter = ElementIndexAdapter.getAdapter(cand);
-				if (depth == cAdapter.depth && cAdapter.getSubtreeIdentityHash() == subtreeKey) {
-					Match cMatch = inProgress.getMatch(cand);
-					// we probably have to consider the containment position in the future
-					if (cMatch == null) {
-						partialMatch = CompareFactory.eINSTANCE.createMatch();
-						MatchUtil.setMatch(partialMatch, eObj, passedObjectSide);
-						MatchUtil.setMatch(partialMatch, cand, sideToFind);
-						return partialMatch;
-					} else if (MatchUtil.tryFillMatched(cMatch, eObj, passedObjectSide)) {
-						return cMatch;
+				if(cAdapter != null) {
+					if (depth == cAdapter.depth && cAdapter.getSubtreeIdentityHash() == subtreeKey) {
+						Match cMatch = inProgress.getMatch(cand);
+						// we probably have to consider the containment position in the future
+						if (cMatch == null) {
+							partialMatch = CompareFactory.eINSTANCE.createMatch();
+							MatchUtil.setMatch(partialMatch, eObj, passedObjectSide);
+							MatchUtil.setMatch(partialMatch, cand, sideToFind);
+							return partialMatch;
+						} else if (MatchUtil.tryFillMatched(cMatch, eObj, passedObjectSide)) {
+							return cMatch;
+						}
 					}
 				}
 			}
 		} else {
 			for (EObject cand : candidates) {
 				ElementIndexAdapter cAdapter = ElementIndexAdapter.getAdapter(cand);
-				if (depth == cAdapter.depth && cAdapter.getSubtreeIdentityHash() == subtreeKey) {
-					Match cMatch = inProgress.getMatch(cand);
-					if (cMatch == null) {
-						// if cand is not considered as matched, we can fill it to partial match
-						// we probably have to consider the containment position in the future
-						MatchUtil.setMatch(partialMatch, cand, sideToFind);
-						return partialMatch;
+				if(cAdapter != null) {
+					if (depth == cAdapter.depth && cAdapter.getSubtreeIdentityHash() == subtreeKey) {
+						Match cMatch = inProgress.getMatch(cand);
+						if (cMatch == null) {
+							// if cand is not considered as matched, we can fill it to partial match
+							// we probably have to consider the containment position in the future
+							MatchUtil.setMatch(partialMatch, cand, sideToFind);
+							return partialMatch;
+						}
 					}
 				}
 			}

@@ -35,9 +35,11 @@ public class ElementIndexAdapter extends AdapterImpl {
             EObject object = (EObject) this.getTarget();
             for(EObject child : object.eContents()) {
                 ElementIndexAdapter childAdapter = ElementIndexAdapter.getAdapter(child);
-                long childTreeHash = childAdapter.getSubtreeIdentityHash();
-                if(childTreeHash != INVALID_IHASH) {
-                    CommonUtils.update(crc32, childTreeHash);
+                if(childAdapter != null) {
+                    long childTreeHash = childAdapter.getSubtreeIdentityHash();
+                    if(childTreeHash != INVALID_IHASH) {
+                        CommonUtils.update(crc32, childTreeHash);
+                    }
                 }
             }
             CommonUtils.update(crc32, "}");
