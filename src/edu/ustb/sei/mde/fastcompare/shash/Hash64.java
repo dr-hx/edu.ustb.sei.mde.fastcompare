@@ -11,7 +11,15 @@ public class Hash64 implements SimHashValue {
 
     static final public Hash64 ZERO_HASH = new Hash64(0);
 
-    
+    static public String toString(Hash64 h) {
+        String string = Long.toBinaryString(h.hash);
+		StringBuilder builder = new StringBuilder();
+		for(int i=string.length();i<64; i++) {
+			builder.append('0');
+		}
+		builder.append(string);
+		return builder.toString();
+    }
 
     @Override
     public int hashCode() {

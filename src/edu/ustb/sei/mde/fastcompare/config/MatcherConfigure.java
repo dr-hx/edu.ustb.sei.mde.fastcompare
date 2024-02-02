@@ -196,10 +196,10 @@ public class MatcherConfigure {
 
     protected void initThresholds() {
         // init Ecore classes
-        this.getClassConfigure(EcorePackage.eINSTANCE.getEClass()).setSimThreshold(0.55);
-        this.getClassConfigure(EcorePackage.eINSTANCE.getEAttribute()).setSimThreshold(0.67);
-        this.getClassConfigure(EcorePackage.eINSTANCE.getEReference()).setSimThreshold(0.65);
-        this.getClassConfigure(EcorePackage.eINSTANCE.getEEnum()).setSimThreshold(0.45);
+        this.getClassConfigure(EcorePackage.eINSTANCE.getEClass()).setSimThreshold(0.59);
+        this.getClassConfigure(EcorePackage.eINSTANCE.getEAttribute()).setSimThreshold(0.69);
+        this.getClassConfigure(EcorePackage.eINSTANCE.getEReference()).setSimThreshold(0.69);
+        this.getClassConfigure(EcorePackage.eINSTANCE.getEEnum()).setSimThreshold(0.47);
         this.getClassConfigure(EcorePackage.eINSTANCE.getEEnumLiteral()).setSimThreshold(0.45);
         this.getClassConfigure(EcorePackage.eINSTANCE.getEOperation()).setSimThreshold(0.55);
         this.getClassConfigure(EcorePackage.eINSTANCE.getEPackage()).setSimThreshold(0.45);
