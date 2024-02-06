@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.emptyIterator;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -20,6 +21,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
+import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapter;
 import edu.ustb.sei.mde.fastcompare.match.eobject.IEObjectMatcher;
 import edu.ustb.sei.mde.fastcompare.match.eobject.IdentifierEObjectMatcher;
 import edu.ustb.sei.mde.fastcompare.match.eobject.ProximityEObjectMatcher;
@@ -91,6 +93,10 @@ public class DefaultMatchEngine implements IMatchEngine {
 		comparison.setThreeWay(origin != null);
 
 		match(comparison, scope, left, right, origin);
+
+		ElementIndexAdapter.removeAdapters(left);
+		ElementIndexAdapter.removeAdapters(right);
+		ElementIndexAdapter.removeAdapters(origin);
 
 		return comparison;
 	}

@@ -12,7 +12,6 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 
 import org.eclipse.emf.compare.Comparison;
-import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
@@ -25,7 +24,7 @@ public class HashFilterIndex implements ObjectFilterIndex {
     private Map<SimHashValue, Set<EObject>> similarityMap;
     private Set<EObject> allObjects;
     private final Function<EObject, Double> computeContainerThresholdRatio;
-    private final MatcherConfigure matcherConfigure;
+    protected final MatcherConfigure matcherConfigure;
 
     public HashFilterIndex(MatcherConfigure configure) {
         if(configure.isUsingIdentityHash()) {

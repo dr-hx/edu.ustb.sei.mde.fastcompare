@@ -50,6 +50,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	/**
 	 * Number of elements to index before a starting a match ahead step.
 	 */
+	@SuppressWarnings("unused")
 	private static final int NB_ELEMENTS_BETWEEN_MATCH_AHEAD = 10000;
 
 	/**
@@ -60,7 +61,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	/**
 	 * Keeps track of which side was the EObject from.
 	 */
-	private Map<EObject, Side> eObjectsToSide = Maps.newHashMap();
+	protected Map<EObject, Side> eObjectsToSide = Maps.newHashMap();
 
 	private MatcherConfigure configure;
 
@@ -331,7 +332,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		return okToMatch;
 	}
 
-	private Match coarseGainedMatch(Comparison comparison, Match partialMatchOfA, EObject a, Side aSide, Side bSide, Side cSide, 
+	protected Match coarseGainedMatch(Comparison comparison, Match partialMatchOfA, EObject a, Side aSide, Side bSide, Side cSide, 
 		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
 		// find subtrees in bSide and cSide
 		// if bSubtree == null && cSubtree == null, then do nothing
@@ -411,6 +412,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		List<EObject> colA = null;
 		List<EObject> colB = null;
 		List<EObject> colToFill = null;
+		@SuppressWarnings("unused")
 		ObjectIndex.Side sideA = null;
 		ObjectIndex.Side sideB = null;
 
@@ -596,7 +598,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		else return obj.eContents();
 	}
 
-	private boolean fineGainedMatch(Comparison comparison, Match partialMatch, EObject a, Side aSide, Side bSide, Side cSide, boolean createUnmatches) {
+	protected boolean fineGainedMatch(Comparison comparison, Match partialMatch, EObject a, Side aSide, Side bSide, Side cSide, boolean createUnmatches) {
 		boolean okToMatch = false;
 		Map<Side, EObject> closests = index.findClosests(comparison, a, aSide, partialMatch);
 		if (closests != null) {
