@@ -1,6 +1,7 @@
 package edu.ustb.sei.mde.fastcompare.ihash;
 
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.Enumerator;
@@ -11,6 +12,7 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.FeatureMap;
 
+import edu.ustb.sei.mde.fastcompare.config.ClassConfigure;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.utils.URIComputer;
 import java.util.zip.CRC32;
@@ -20,9 +22,11 @@ import java.util.zip.CRC32;
  */
 public class ElementIHasher {
     private URIComputer uriComputer;
+    private MatcherConfigure configure;
 
     public ElementIHasher(MatcherConfigure configure) {
         uriComputer = configure.getUriComputer();
+        this.configure = configure;
     }
 
     public long hash(EObject element) {
@@ -172,16 +176,19 @@ public class ElementIHasher {
 
     private void serializeEObject(EObject value) {
         append('{');
-        EClass clazz = value.eClass();
-        for(EStructuralFeature feature : clazz.getEAllStructuralFeatures()) {
+        final EClass clazz = value.eClass();
+        final ClassConfigure clsConfig = configure.getClassConfigure(clazz);
+        for(Entry<EStructuralFeature, ?> pair : clsConfig.getConcernedFeatures()) {
+            EStructuralFeature feature = pair.getKey();
             if(value.eIsSet(feature)==false) continue;
             Object val = value.eGet(feature);
             if(feature instanceof EReference) {
-                if(((EReference)feature).isContainment() == false) {
-                    append(feature.getName());
-                    append(':');
-                    serializeEValue(val);
-                }
+                // if(((EReference)feature).isContainment() == false) {
+                //     // TODO: check if referenced objects affect the matches
+                //     append(feature.getName());
+                //     append(':');
+                //     serializeEValue(val);
+                // }
             } else {
                 append(feature.getName());
                 append(':');

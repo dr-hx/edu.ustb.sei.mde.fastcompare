@@ -40,15 +40,18 @@ public class ElementIndexAdapter extends AdapterImpl {
             CommonUtils.update(crc32, localIdentityHash);
             CommonUtils.update(crc32, "{");
             EObject object = (EObject) this.getTarget();
+            // long childHashes = 0L;
             for(EObject child : object.eContents()) {
                 ElementIndexAdapter childAdapter = ElementIndexAdapter.getAdapter(child);
                 if(childAdapter != null) {
                     long childTreeHash = childAdapter.getSubtreeIdentityHash();
                     if(childTreeHash != INVALID_IHASH) {
                         CommonUtils.update(crc32, childTreeHash);
+                        // childHashes ^= childTreeHash;
                     }
                 }
             }
+            // CommonUtils.update(crc32, childHashes);
             CommonUtils.update(crc32, "}");
             treeIdentityHash = crc32.getValue();
         }

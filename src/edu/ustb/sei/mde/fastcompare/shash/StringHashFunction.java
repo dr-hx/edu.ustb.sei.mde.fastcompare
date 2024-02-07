@@ -20,18 +20,19 @@ public class StringHashFunction implements SHashFunction<String> {
     }
 
     static private long bigramString(String string) {
-        if(string.length() == 0) return 0;
+        if(string.length() == 0) return bigramHash('#', '#');
         else if(string.length() == 1) {
-            return 1L << (string.charAt(0) % 64);
+            final char ch0 = string.charAt(0);
+            return bigramHash('#', ch0) | bigramHash(ch0,'#'); 
         } else {
             long hash = 0;
-            char prev = string.charAt(0);
-            for(int i = 1; i< string.length(); i++) {
+            char prev = '#';
+            for(int i = 0; i< string.length(); i++) {
                 char cur = string.charAt(i);
                 hash |= bigramHash(prev, cur);
                 prev = cur;
             }
-            return hash;
+            return hash | bigramHash(prev, '#');
         }
 
     }

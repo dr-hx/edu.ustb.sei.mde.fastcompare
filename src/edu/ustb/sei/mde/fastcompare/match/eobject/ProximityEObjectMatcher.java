@@ -332,6 +332,8 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		return okToMatch;
 	}
 
+	public static long total = 0;
+
 	protected Match coarseGainedMatch(Comparison comparison, Match partialMatchOfA, EObject a, Side aSide, Side bSide, Side cSide, 
 		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
 		// find subtrees in bSide and cSide
@@ -351,7 +353,6 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 			boolean unmatchedB = !MatchUtil.isMatched(partialMatchOfA, bSide);
 			
 			Match result = index.findIdenticalSubtrees(comparison, a, aSide, partialMatchOfA, roots);
-			
 			if(partialMatchOfA == null) {
 				if(result == null) {
 					// no subtree match is found
@@ -359,6 +360,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 				} else {
 					if(result.eContainer() == null) {
 						// this is a new match
+						total ++;
 						createNewSubtreeMatches(comparison, result, roots);
 					} else {
 						// this is a match from other sides
