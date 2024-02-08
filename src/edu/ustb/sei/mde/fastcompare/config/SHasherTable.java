@@ -1,7 +1,6 @@
 package edu.ustb.sei.mde.fastcompare.config;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EDataType;

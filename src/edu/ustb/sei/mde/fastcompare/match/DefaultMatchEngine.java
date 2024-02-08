@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.emptyIterator;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -21,7 +20,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
-import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapter;
+import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapterFactory;
 import edu.ustb.sei.mde.fastcompare.match.eobject.IEObjectMatcher;
 import edu.ustb.sei.mde.fastcompare.match.eobject.IdentifierEObjectMatcher;
 import edu.ustb.sei.mde.fastcompare.match.eobject.ProximityEObjectMatcher;
@@ -46,6 +45,8 @@ public class DefaultMatchEngine implements IMatchEngine {
 	/** The factory that will be use to instantiate Comparison as return by match() methods. */
 	private final IComparisonFactory comparisonFactory;
 
+	private final MatcherConfigure matcherConfigure;
+
 	/**
 	 * This default engine delegates the pairing of EObjects to an {@link IEObjectMatcher}.
 	 * 
@@ -55,8 +56,8 @@ public class DefaultMatchEngine implements IMatchEngine {
 	 *            factory that will be use to instantiate Comparison as return by match() methods.
 	 * @since 3.0
 	 */
-	public DefaultMatchEngine(IEObjectMatcher matcher, IComparisonFactory comparisonFactory) {
-		this(matcher, new StrategyResourceMatcher(), comparisonFactory);
+	public DefaultMatchEngine(MatcherConfigure matcherConfigure, IEObjectMatcher matcher, IComparisonFactory comparisonFactory) {
+		this(matcherConfigure, matcher, new StrategyResourceMatcher(), comparisonFactory);
 	}
 
 	/**
@@ -70,11 +71,12 @@ public class DefaultMatchEngine implements IMatchEngine {
 	 *            factory that will be use to instantiate Comparison as return by match() methods.
 	 * @since 3.2
 	 */
-	public DefaultMatchEngine(IEObjectMatcher eObjectMatcher, IResourceMatcher resourceMatcher,
+	public DefaultMatchEngine(MatcherConfigure matcherConfigure, IEObjectMatcher eObjectMatcher, IResourceMatcher resourceMatcher,
 			IComparisonFactory comparisonFactory) {
 		this.eObjectMatcher = checkNotNull(eObjectMatcher);
 		this.resourceMatcher = checkNotNull(resourceMatcher);
 		this.comparisonFactory = checkNotNull(comparisonFactory);
+		this.matcherConfigure = matcherConfigure;
 	}
 
 	/**
@@ -94,9 +96,9 @@ public class DefaultMatchEngine implements IMatchEngine {
 
 		match(comparison, scope, left, right, origin);
 
-		ElementIndexAdapter.removeAdapters(left);
-		ElementIndexAdapter.removeAdapters(right);
-		ElementIndexAdapter.removeAdapters(origin);
+		this.matcherConfigure.getIndexAdapterFactory().removeAdapters(left);
+		this.matcherConfigure.getIndexAdapterFactory().removeAdapters(right);
+		this.matcherConfigure.getIndexAdapterFactory().removeAdapters(origin);
 
 		return comparison;
 	}
@@ -387,7 +389,7 @@ public class DefaultMatchEngine implements IMatchEngine {
 			resourceMatcher = new StrategyResourceMatcher(strategies);
 		}
 
-		final IMatchEngine matchEngine = new DefaultMatchEngine(eObjectMatcher, resourceMatcher,
+		final IMatchEngine matchEngine = new DefaultMatchEngine(configure, eObjectMatcher, resourceMatcher,
 				comparisonFactory);
 		return matchEngine;
 	}

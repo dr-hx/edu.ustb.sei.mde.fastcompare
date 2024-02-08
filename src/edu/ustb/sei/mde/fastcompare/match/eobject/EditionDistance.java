@@ -37,6 +37,7 @@ import edu.ustb.sei.mde.fastcompare.match.URIDistance;
 import edu.ustb.sei.mde.fastcompare.utils.AccessBasedLRUCache;
 
 import edu.ustb.sei.mde.fastcompare.utils.DiffUtil;
+import edu.ustb.sei.mde.fastcompare.utils.ProfileCounter;
 import edu.ustb.sei.mde.fastcompare.utils.ReferenceUtil;
 import edu.ustb.sei.mde.fastcompare.utils.URIComputer;
 
@@ -485,9 +486,11 @@ public class EditionDistance implements DistanceFunction {
     }
 
 	private int distanceCount = 0;
+	private ProfileCounter count = new ProfileCounter();
 	public void dump() {
 		System.out.println("Distance "+distanceCount);
 		System.out.println("Idchecks "+idcheck);
+		count.dump();
 	}
     /**
 	 * {@inheritDoc}

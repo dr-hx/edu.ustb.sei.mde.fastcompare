@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -20,6 +19,8 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.EcorePackage;
 
 import edu.ustb.sei.mde.fastcompare.config.FeatureConfigure.AdaptiveFeatureConfigure;
+import edu.ustb.sei.mde.fastcompare.index.DefaultElementIndexAdapterFactory;
+import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapterFactory;
 import edu.ustb.sei.mde.fastcompare.match.EqualityHelper;
 import edu.ustb.sei.mde.fastcompare.match.EqualityHelperExtension;
 import edu.ustb.sei.mde.fastcompare.match.IEqualityHelper;
@@ -118,8 +119,18 @@ public class MatcherConfigure {
         this.adaptiveFeatureConfigure = new AdaptiveFeatureConfigure(defaultWeightTable, defaultFeatureSHasherTable);
         this.elementHasher = new Hasher(this);
 
+        this.indexAdapterFactory = new DefaultElementIndexAdapterFactory();
+
         initThresholds();
         initIgnoredClasses();
+    }
+
+    public ElementIndexAdapterFactory getIndexAdapterFactory() {
+        return indexAdapterFactory;
+    }
+
+    public void setIndexAdapterFactory(ElementIndexAdapterFactory indexAdapterFactory) {
+        this.indexAdapterFactory = indexAdapterFactory;
     }
 
     protected Set<EClass> ignoredClasses = new HashSet<>();
@@ -349,4 +360,6 @@ public class MatcherConfigure {
         }
         return null;
     } 
+
+    private ElementIndexAdapterFactory indexAdapterFactory;
 }

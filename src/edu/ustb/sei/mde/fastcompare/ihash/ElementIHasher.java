@@ -21,12 +21,18 @@ import java.util.zip.CRC32;
  * This class is used to compute i-hash
  */
 public class ElementIHasher {
-    private URIComputer uriComputer;
-    private MatcherConfigure configure;
+    final private URIComputer uriComputer;
+    final private MatcherConfigure configure;
+    // final private Consumer<EObject> eObjectHasher;
 
     public ElementIHasher(MatcherConfigure configure) {
-        uriComputer = configure.getUriComputer();
+        this.uriComputer = configure.getUriComputer();
         this.configure = configure;
+        // if(configure.isUsingIdentityHash()) {
+        //     eObjectHasher = this::serializeEObject;
+        // } else {
+        //     eObjectHasher = this::serializeEObjectWithoutReferences;
+        // }
     }
 
     public long hash(EObject element) {
@@ -174,6 +180,26 @@ public class ElementIHasher {
         }
     }
 
+    // private void serializeEObjectWithoutReferences(EObject value) {
+    //     append('{');
+    //     final EClass clazz = value.eClass();
+    //     final ClassConfigure clsConfig = configure.getClassConfigure(clazz);
+    //     for(Entry<EStructuralFeature, ?> pair : clsConfig.getConcernedFeatures()) {
+    //         EStructuralFeature feature = pair.getKey();
+    //         if(value.eIsSet(feature)==false) continue;
+    //         Object val = value.eGet(feature);
+    //         if(feature instanceof EReference) {
+    //             // ignore cross references
+    //         } else {
+    //             append(feature.getName());
+    //             append(':');
+    //             serializeValue(val);
+    //         }
+    //         append(',');
+    //     }
+    //     append('}');
+    // }
+
     private void serializeEObject(EObject value) {
         append('{');
         final EClass clazz = value.eClass();
@@ -183,12 +209,11 @@ public class ElementIHasher {
             if(value.eIsSet(feature)==false) continue;
             Object val = value.eGet(feature);
             if(feature instanceof EReference) {
-                // if(((EReference)feature).isContainment() == false) {
-                //     // TODO: check if referenced objects affect the matches
-                //     append(feature.getName());
-                //     append(':');
-                //     serializeEValue(val);
-                // }
+                if(((EReference)feature).isContainment() == false) {
+                    append(feature.getName());
+                    append(':');
+                    serializeEValue(val);
+                }
             } else {
                 append(feature.getName());
                 append(':');

@@ -14,6 +14,7 @@ import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.ecore.EObject;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
@@ -312,8 +313,18 @@ public class ProximityIndex implements ObjectIndex {
 	private EObject findTheClosest(Comparison inProgress, final EObject eObj, final Side eObjSide,
 			final Side sideToFind, final boolean shouldDoubleCheck) {
 		final ObjectFilterIndex storageToSearchFor = getStorageToSearchFor(sideToFind);
-
+		
+		Predicate<EObject> filter = (o) -> {
+			Match m = inProgress.getMatch(o);
+			if(m != null) {
+				return !MatchUtil.isMatched(m, eObjSide); // since we want to find the match of eObjSide, m.eObjSide must be empty
+			}
+			return true;
+		};
+		
 		Iterable<EObject> idenCands = storageToSearchFor.filterCandidates(inProgress, eObj, null, 1.0);
+		idenCands = Iterables.filter(idenCands, filter);
+
 		for (EObject fastCheck : idenCands) {
 			if (!readyForThisTestWithoutCache(inProgress, fastCheck)) {
 			} else {
@@ -344,13 +355,7 @@ public class ProximityIndex implements ObjectIndex {
 
 		Iterable<EObject> simCands = storageToSearchFor.filterCandidates(inProgress, eObj,
 				Optional.ofNullable(matchedContainer), minSim);
-		simCands = Iterables.filter(simCands, (o) ->{
-			Match m = inProgress.getMatch(o);
-			if(m != null) {
-				return !MatchUtil.isMatched(m, eObjSide); // since we want to find the match of eObjSide, m.eObjSide must be empty
-			}
-			return true;
-		});
+		simCands = Iterables.filter(simCands, filter);
 
 		double bestDistance = Double.MAX_VALUE;
 		EObject bestObject = null;

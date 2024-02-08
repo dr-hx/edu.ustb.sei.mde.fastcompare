@@ -13,6 +13,7 @@ import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapter;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex.Side;
 import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
+import edu.ustb.sei.mde.fastcompare.utils.ProfileCounter;
 import edu.ustb.sei.mde.fastcompare.utils.Triple;
 
 public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
@@ -92,9 +93,13 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
 
 		// sub-tree match
 		partialMatchOfA = coarseGainedMatch(comparison, partialMatchOfA, a, aSide, bSide, cSide, roots);
+        // if(partialMatchOfA != null) {
+        //     counter.hit(a.eClass());
+        // }
 		assert MatchUtil.isValidPartialMatch(partialMatchOfA);
 		return partialMatchOfA;
     }
+    // static public ProfileCounter counter = new ProfileCounter();
     
     private boolean tryFineMatch(Comparison comparison, EObject a, Match partialMatchOfA, boolean createUnmatches) {
 		Side aSide = eObjectsToSide.get(a);

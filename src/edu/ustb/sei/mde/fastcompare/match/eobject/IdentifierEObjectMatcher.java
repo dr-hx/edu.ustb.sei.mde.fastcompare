@@ -28,6 +28,7 @@ import com.google.common.collect.Sets;
 
 import org.eclipse.emf.ecore.util.InternalEList;
 
+import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex;
 import edu.ustb.sei.mde.fastcompare.utils.TreesIterator;
 
@@ -623,5 +624,11 @@ public class IdentifierEObjectMatcher implements IEObjectMatcher {
 				}
 			}
 		}
+	}
+
+	@Override
+	public MatcherConfigure getMatcherConfigure() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getMatcherConfigure'");
 	}
 }

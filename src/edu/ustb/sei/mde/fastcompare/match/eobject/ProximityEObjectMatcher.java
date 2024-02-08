@@ -10,6 +10,7 @@ import edu.ustb.sei.mde.fastcompare.config.Hasher;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.index.ByTypeIndex;
 import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapter;
+import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapterFactory;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex.Side;
 import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
@@ -65,6 +66,8 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 
 	private MatcherConfigure configure;
 
+	private ElementIndexAdapterFactory indexAdapterFactory;
+
 	/**
 	 * Create the matcher using the given distance function.
 	 * 
@@ -74,6 +77,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	public ProximityEObjectMatcher(MatcherConfigure configure) {
 		this.index = new ByTypeIndex(this, configure);
 		this.configure = configure;
+		this.indexAdapterFactory = configure.getIndexAdapterFactory();
 	}
 
 	/**
@@ -83,7 +87,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	 * @return
 	 */
 	private Set<EObject> buildIndex(Iterator<? extends EObject> objects, Side side) {
-		ElementIndexAdapter.reset();
+		// ElementIndexAdapter.reset();
 		Set<EObject> roots = new LinkedHashSet<>();
 		// roots
 		while(objects.hasNext()) {
@@ -121,7 +125,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	 * @param side
 	 */
 	private void buildIndex(Iterable<? extends EObject> roots, Side side) {
-		ElementIndexAdapter.reset();
+		// ElementIndexAdapter.reset();
 		for(EObject root : roots) {
 			buildIndex(root, side);
 		}
@@ -141,7 +145,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	}
 
 	private ElementIndexAdapter doHash(EObject next) {
-		ElementIndexAdapter adapter = ElementIndexAdapter.equip(next);
+		ElementIndexAdapter adapter = this.indexAdapterFactory.equip(next);
 		Hasher hasher = configure.getElementHasher();
 		if(configure.shouldDoSimHash(next.eClass())) {
 			adapter.similarityHash = hasher.computeSHash(next);
@@ -746,5 +750,10 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	 */
 	public boolean isInScope(EObject eContainer) {
 		return eObjectsToSide.get(eContainer) != null;
+	}
+
+	@Override
+	public MatcherConfigure getMatcherConfigure() {
+		return this.configure;
 	}
 }

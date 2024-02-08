@@ -6,6 +6,8 @@ import java.util.Iterator;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.ecore.EObject;
 
+import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
+
 public interface IEObjectMatcher {
 	/**
 	 * This will be called by the match engine to determine matches between EObjects.
@@ -37,4 +39,6 @@ public interface IEObjectMatcher {
 	
 	void createMatches(Comparison comparison, Iterator<? extends EObject> leftEObjects,
 		Iterator<? extends EObject> rightEObjects, Iterator<? extends EObject> originEObjects);
+
+	MatcherConfigure getMatcherConfigure();
 }

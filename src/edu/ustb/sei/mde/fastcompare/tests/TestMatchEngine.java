@@ -26,6 +26,7 @@ public class TestMatchEngine {
     private IMatchEngine engine;
     private ResourceSet resourceSet;
     private MatcherConfigure config;
+    
     @Before
     public void initEngine() {
         config = new MatcherConfigure();
@@ -33,7 +34,7 @@ public class TestMatchEngine {
         config.setUseIdentityHash(false);
         config.setUseSimHash(false);
         IEObjectMatcher matcher = new TopDownProximityEObjectMatcher(config);
-        engine = new DefaultMatchEngine(matcher, new DefaultComparisonFactory(config));
+        engine = new DefaultMatchEngine(config, matcher, new DefaultComparisonFactory(config));
         resourceSet = new ResourceSetImpl();
         resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put(
 			Resource.Factory.Registry.DEFAULT_EXTENSION, new XMIResourceFactoryImpl());
@@ -58,6 +59,7 @@ public class TestMatchEngine {
         System.out.println((System.nanoTime() - start) / 1000000.0);
         ((EditionDistance) config.getDistanceFunction()).dump();
         System.out.println(ProximityEObjectMatcher.total);
+        // TopDownProximityEObjectMatcher.counter.dump();
         // result.getMatches().forEach(this::printMatch);
     }
 
