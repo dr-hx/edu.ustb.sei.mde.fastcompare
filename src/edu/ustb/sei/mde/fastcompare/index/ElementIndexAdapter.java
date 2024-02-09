@@ -13,9 +13,9 @@ import edu.ustb.sei.mde.fastcompare.utils.CommonUtils;
  * This class is used to store element indices.
  */
 public class ElementIndexAdapter extends AdapterImpl {
-    private static final long INVALID_IHASH = 0xF000000000000000L;
+    public static final long INVALID_IHASH = 0xF000000000000000L;
 
-    public int depth = 0;
+    public int height = 1;
     public SimHashValue similarityHash = null;
     public long localIdentityHash = INVALID_IHASH;
     private long treeIdentityHash = INVALID_IHASH;
@@ -42,6 +42,8 @@ public class ElementIndexAdapter extends AdapterImpl {
                         CommonUtils.update(crc32, childTreeHash);
                         // childHashes ^= childTreeHash;
                     }
+                    if(childAdapter.height + 1 > height)
+                        height = childAdapter.height + 1;
                 }
             }
             // CommonUtils.update(crc32, childHashes);
@@ -59,11 +61,12 @@ public class ElementIndexAdapter extends AdapterImpl {
     }
 
     @Override
-    public boolean isAdapterForType(Object type) {
+    final public boolean isAdapterForType(Object type) {
         return type == ElementIndexAdapter.class;
     }
 
-    static public ElementIndexAdapter getAdapter(EObject obj) {
-        return (ElementIndexAdapter) EcoreUtil.getExistingAdapter(obj, ElementIndexAdapter.class);
+    @SuppressWarnings("unchecked")
+    static public <T extends ElementIndexAdapter> T getAdapter(EObject obj) {
+        return (T) EcoreUtil.getExistingAdapter(obj, ElementIndexAdapter.class);
     }
 }

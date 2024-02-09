@@ -167,14 +167,14 @@ public class ProximityIndex implements ObjectIndex {
 		ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(eObj);
 		if(adapter == null) return null;
 
-		final int depth = adapter.depth;
+		final int height = adapter.height;
 		final long subtreeKey = adapter.getSubtreeIdentityHash();
 
 		if (partialMatch == null) {
 			for (EObject cand : candidates) {
 				ElementIndexAdapter cAdapter = ElementIndexAdapter.getAdapter(cand);
 				if(cAdapter != null) {
-					if (depth == cAdapter.depth && cAdapter.getSubtreeIdentityHash() == subtreeKey) {
+					if (height == cAdapter.height && cAdapter.getSubtreeIdentityHash() == subtreeKey) {
 						Match cMatch = inProgress.getMatch(cand);
 						// we probably have to consider the containment position in the future
 						if (cMatch == null) {
@@ -192,7 +192,7 @@ public class ProximityIndex implements ObjectIndex {
 			for (EObject cand : candidates) {
 				ElementIndexAdapter cAdapter = ElementIndexAdapter.getAdapter(cand);
 				if(cAdapter != null) {
-					if (depth == cAdapter.depth && cAdapter.getSubtreeIdentityHash() == subtreeKey) {
+					if (height == cAdapter.height && cAdapter.getSubtreeIdentityHash() == subtreeKey) {
 						Match cMatch = inProgress.getMatch(cand);
 						if (cMatch == null) {
 							// if cand is not considered as matched, we can fill it to partial match
@@ -315,11 +315,12 @@ public class ProximityIndex implements ObjectIndex {
 		final ObjectFilterIndex storageToSearchFor = getStorageToSearchFor(sideToFind);
 		
 		Predicate<EObject> filter = (o) -> {
-			Match m = inProgress.getMatch(o);
-			if(m != null) {
-				return !MatchUtil.isMatched(m, eObjSide); // since we want to find the match of eObjSide, m.eObjSide must be empty
-			}
-			return true;
+			return !MatchUtil.hasMatchFor(o, inProgress, eObjSide);
+			// Match m = inProgress.getMatch(o);
+			// if(m != null) {
+			// 	return !MatchUtil.isMatched(m, eObjSide); // since we want to find the match of eObjSide, m.eObjSide must be empty
+			// }
+			// return true;
 		};
 		
 		Iterable<EObject> idenCands = storageToSearchFor.filterCandidates(inProgress, eObj, null, 1.0);

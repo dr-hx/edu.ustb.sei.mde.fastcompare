@@ -136,4 +136,9 @@ public class MatchUtil {
         }
         return true;
     }
+
+    static public boolean hasMatchFor(EObject o, Comparison comp, ObjectIndex.Side side) {
+        final Match m = comp.getMatch(o);
+        return m != null && MatchUtil.isMatched(m, side);
+    }
 }

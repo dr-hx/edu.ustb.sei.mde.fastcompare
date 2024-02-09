@@ -27,7 +27,7 @@ public abstract class ElementIndexAdapterFactory {
     protected int totalNumbers = 0;
 
     public ElementIndexAdapter getAdapter(EObject obj) {
-        return (ElementIndexAdapter) EcoreUtil.getExistingAdapter(obj, ElementIndexAdapter.class);
+        return ElementIndexAdapter.getAdapter(obj);
     }
 
     protected void clearAdapter(EObject o) {

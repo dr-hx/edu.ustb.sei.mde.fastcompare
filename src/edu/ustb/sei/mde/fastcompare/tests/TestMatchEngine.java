@@ -13,6 +13,10 @@ import org.junit.Test;
 
 import edu.ustb.sei.mde.fastcompare.config.Hasher;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
+import edu.ustb.sei.mde.fastcompare.index.DefaultElementIndexAdapterFactory;
+import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapter;
+import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapterFactory;
+import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapterWithStructuralChecksum;
 import edu.ustb.sei.mde.fastcompare.match.DefaultComparisonFactory;
 import edu.ustb.sei.mde.fastcompare.match.DefaultMatchEngine;
 import edu.ustb.sei.mde.fastcompare.match.IMatchEngine;
@@ -33,6 +37,12 @@ public class TestMatchEngine {
         config.setUseSubtreeHash(true);
         config.setUseIdentityHash(false);
         config.setUseSimHash(false);
+        config.setIndexAdapterFactory(new ElementIndexAdapterFactory() {
+            @Override
+            protected ElementIndexAdapter createAdapter(int id) {
+                return new ElementIndexAdapterWithStructuralChecksum(id);
+            }
+        });
         IEObjectMatcher matcher = new TopDownProximityEObjectMatcher(config);
         engine = new DefaultMatchEngine(config, matcher, new DefaultComparisonFactory(config));
         resourceSet = new ResourceSetImpl();

@@ -57,14 +57,14 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	/**
 	 * The index which keep the EObjects.
 	 */
-	private ObjectIndex index;
+	protected ObjectIndex index;
 
 	/**
 	 * Keeps track of which side was the EObject from.
 	 */
 	protected Map<EObject, Side> eObjectsToSide = Maps.newHashMap();
 
-	private MatcherConfigure configure;
+	protected MatcherConfigure configure;
 
 	private ElementIndexAdapterFactory indexAdapterFactory;
 
@@ -99,25 +99,25 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 		}
 
 		// build coarse-grained index from roots
-		if(configure.isUsingSubtreeHash()) {
-			for(EObject root : roots) {
-				buildSubtreeKey(root);
-			}
-		}
+		// if(configure.isUsingSubtreeHash()) {
+		// 	for(EObject root : roots) {
+		// 		buildSubtreeKey(root);
+		// 	}
+		// }
 
 		return roots;
 	}
 
-	private int buildSubtreeKey(EObject root) {
-		int maxChildDepth = 0;
-		for(EObject child : root.eContents()) {
-			ElementIndexAdapter cAdapter = ElementIndexAdapter.getAdapter(child);
-			if(maxChildDepth < cAdapter.depth) maxChildDepth = cAdapter.depth;
-		}
-		ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(root);
-		adapter.depth = maxChildDepth + 1;
-		return adapter.depth;
-	}
+	// private void buildSubtreeKey(EObject root) {
+	// 	// int maxChildDepth = 0;
+	// 	for(EObject child : root.eContents()) {
+	// 		ElementIndexAdapter cAdapter = ElementIndexAdapter.getAdapter(child);
+	// 		// if(maxChildDepth < cAdapter.depth) maxChildDepth = cAdapter.depth;
+	// 	}
+	// 	ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(root);
+	// 	// adapter.depth = maxChildDepth + 1;
+	// 	// return adapter.depth;
+	// }
 
 	/**
 	 * Build index from roots
@@ -133,18 +133,19 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 
 	private ElementIndexAdapter buildIndex(EObject root, Side side) {
 		ElementIndexAdapter adapter = doHash(root);
-		int maxDepth = 0;
+		// int maxDepth = 0;
 		index.index(root, side);
 		eObjectsToSide.put(root, side);
 		for(EObject child : root.eContents()) {
+			@SuppressWarnings("unused")
 			ElementIndexAdapter cAdapter = buildIndex(child, side);
-			if(maxDepth < cAdapter.depth) maxDepth = cAdapter.depth;
+			// if(maxDepth < cAdapter.depth) maxDepth = cAdapter.depth;
 		}
-		adapter.depth = maxDepth + 1;
+		// adapter.depth = maxDepth + 1;
 		return adapter;
 	}
 
-	private ElementIndexAdapter doHash(EObject next) {
+	protected ElementIndexAdapter doHash(EObject next) {
 		ElementIndexAdapter adapter = this.indexAdapterFactory.equip(next);
 		Hasher hasher = configure.getElementHasher();
 		if(configure.shouldDoSimHash(next.eClass())) {
@@ -400,7 +401,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	// at this point, we know that sideToFile is sub-tree-equal to one of the other two sides.
 	// 	since this match is filled from a partial match and 
 	// 	we create partial match only when the filled sides are sub-tree-equal
-	private void fillSubtreeMatches(Comparison comparison, Match match, ObjectIndex.Side sideToFill,
+	protected void fillSubtreeMatches(Comparison comparison, Match match, ObjectIndex.Side sideToFill,
 		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
 		
 		if(MatchUtil.isFullMatch(match)) {
@@ -494,7 +495,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 
 	}
 
-	private void createNewSubtreeMatches(Comparison comparison, Match match,
+	protected void createNewSubtreeMatches(Comparison comparison, Match match,
 		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
 
 		if(roots.origin.isEmpty() && match.getOrigin() == MatchUtil.PSEUDO_MATCHED_OBJECT) {
@@ -750,10 +751,5 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	 */
 	public boolean isInScope(EObject eContainer) {
 		return eObjectsToSide.get(eContainer) != null;
-	}
-
-	@Override
-	public MatcherConfigure getMatcherConfigure() {
-		return this.configure;
 	}
 }
