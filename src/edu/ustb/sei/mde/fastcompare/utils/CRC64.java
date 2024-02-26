@@ -80,6 +80,7 @@ public class CRC64 implements Checksum{
     public void reset() {
         checksum = 0;
     }
+    
     @Override
     public void update(int arg0) {
         byte b0 = (byte) (arg0 & 0xFF);
@@ -87,8 +88,16 @@ public class CRC64 implements Checksum{
         byte b2 = (byte) ((arg0 >>> 16) & 0xFF);
         byte b3 = (byte) ((arg0 >>> 24) & 0xFF);
 
-        update(new byte[]{b0, b1, b2, b3}, 0, 4);
+        final int lookupidx0 = ((byte) checksum ^ b0) & 0xff;
+        checksum = (checksum >>> 8) ^ LOOKUPTABLE[lookupidx0];
+        final int lookupidx1 = ((byte) checksum ^ b1) & 0xff;
+        checksum = (checksum >>> 8) ^ LOOKUPTABLE[lookupidx1];
+        final int lookupidx2 = ((byte) checksum ^ b2) & 0xff;
+        checksum = (checksum >>> 8) ^ LOOKUPTABLE[lookupidx2];
+        final int lookupidx3 = ((byte) checksum ^ b3) & 0xff;
+        checksum = (checksum >>> 8) ^ LOOKUPTABLE[lookupidx3];
     }
+
     @Override
     public void update(byte[] bytes, int offset, int len) {
         int end = Math.min(bytes.length, offset + len);

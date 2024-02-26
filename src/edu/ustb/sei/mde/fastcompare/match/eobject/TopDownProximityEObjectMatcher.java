@@ -328,7 +328,7 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
 		
         final int size = adapter.size;
         final int height = adapter.height;
-        if(size < 4 && height < 3) return partialMatch;
+        if(size < 2 && height < 2) return partialMatch;
 
 		if (partialMatch == null) {
             EObject found = null;
@@ -338,8 +338,9 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
 				if(cAdapter != null) {
 					if(MatchUtil.hasMatchFor(cand, inProgress, passedObjectSide)) continue;
                     final long ctreeKey = cAdapter.getTreeStructuralChecksum();
+					double dbg;
 					if (size == cAdapter.size && height == cAdapter.height && ctreeKey == subtreeKey 
-						&& adapter.treeSimHash.similarity(cAdapter.treeSimHash) > 0.7) {
+						&& (dbg = adapter.treeSimHash.similarity(cAdapter.treeSimHash)) > 0.85) {
                         if(found == null) {
                             found = cand;
                         } else {

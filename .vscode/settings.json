@@ -7,6 +7,10 @@
         "/commonlibs/java/plugins/org.eclipse.emf_2.9.0.v20230211-1150.jar",
         "/commonlibs/java/plugins/org.eclipse.emf.common_2.28.0.v20230315-1321.jar",
         "/commonlibs/java/plugins/org.eclipse.emf.ecore_2.34.0.v20230406-1203.jar",
-        "/commonlibs/java/plugins/org.eclipse.emf.ecore.xmi_2.18.0.v20230211-1150.jar"
+        "/commonlibs/java/plugins/org.eclipse.emf.ecore.xmi_2.18.0.v20230211-1150.jar",
+        "/commonlibs/java/plugins/org.eclipse.uml2_5.5.3.v20221116-1811.jar",
+        "/commonlibs/java/plugins/org.eclipse.uml2.types_2.5.0.v20221116-1811.jar",
+        "/commonlibs/java/plugins/org.eclipse.uml2.common_2.5.0.v20221116-1811.jar",
+        "/commonlibs/java/plugins/org.eclipse.uml2.uml_5.5.0.v20221116-1811.jar"
     ]
 }

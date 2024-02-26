@@ -152,7 +152,7 @@ public class ElementIHasher {
     }
 
     private void serializeEnumValue(Enumerator value) {
-        append(((EEnumLiteral)value).getLiteral());
+        append(((Enumerator)value).getLiteral());
     }
 
     private void serializeValue(Object value) {
@@ -201,8 +201,9 @@ public class ElementIHasher {
     // }
 
     private void serializeEObject(EObject value) {
-        append('{');
         final EClass clazz = value.eClass();
+        append(clazz.getName());
+        append(":{");
         final ClassConfigure clsConfig = configure.getClassConfigure(clazz);
         for(Entry<EStructuralFeature, ?> pair : clsConfig.getConcernedFeatures()) {
             EStructuralFeature feature = pair.getKey();

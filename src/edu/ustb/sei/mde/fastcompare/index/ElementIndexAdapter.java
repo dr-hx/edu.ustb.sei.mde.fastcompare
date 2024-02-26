@@ -7,6 +7,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import edu.ustb.sei.mde.fastcompare.shash.SimHashValue;
+import edu.ustb.sei.mde.fastcompare.utils.CRC64;
 import edu.ustb.sei.mde.fastcompare.utils.CommonUtils;
 
 /**
@@ -29,9 +30,9 @@ public class ElementIndexAdapter extends AdapterImpl {
     public long getSubtreeIdentityHash() {
         if(treeIdentityHash == INVALID_IHASH) {
             if(localIdentityHash == INVALID_IHASH) return INVALID_IHASH;
-            CRC32 crc32 = new CRC32();
-            CommonUtils.update(crc32, localIdentityHash);
-            CommonUtils.update(crc32, "{");
+            CRC64 crc = new CRC64();
+            CommonUtils.update(crc, localIdentityHash);
+            CommonUtils.update(crc, "{");
             EObject object = (EObject) this.getTarget();
             // long childHashes = 0L;
             for(EObject child : object.eContents()) {
@@ -39,7 +40,7 @@ public class ElementIndexAdapter extends AdapterImpl {
                 if(childAdapter != null) {
                     long childTreeHash = childAdapter.getSubtreeIdentityHash();
                     if(childTreeHash != INVALID_IHASH) {
-                        CommonUtils.update(crc32, childTreeHash);
+                        CommonUtils.update(crc, childTreeHash);
                         // childHashes ^= childTreeHash;
                     }
                     if(childAdapter.height + 1 > height)
@@ -47,8 +48,8 @@ public class ElementIndexAdapter extends AdapterImpl {
                 }
             }
             // CommonUtils.update(crc32, childHashes);
-            CommonUtils.update(crc32, "}");
-            treeIdentityHash = crc32.getValue();
+            CommonUtils.update(crc, "}");
+            treeIdentityHash = crc.getValue();
         }
 
         return treeIdentityHash;

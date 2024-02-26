@@ -109,8 +109,12 @@ public class MatcherConfigure {
     private boolean useSimHash = true;
 
     public MatcherConfigure() {
+        this(new EcoreWeightTable());
+    }
+
+    public MatcherConfigure(IWeightTable weightTable) {
         this.uriComputer = new URIComputer();
-        this.defaultWeightTable = new EcoreWeightTable();
+        this.defaultWeightTable = weightTable;
 
         this.equalityHelperProvider = (c) -> new EqualityHelper(new AutoLRUCache<>(4096, 4096, 0.75f), c);
         this.distanceFunction = new EditionDistance(this);

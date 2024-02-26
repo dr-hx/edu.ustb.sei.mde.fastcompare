@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="ASCII"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="ecore" nsURI="http://conf8lSictingeclass/b" nsPrefix="ecore">
+  <eClassifiers xsi:type="ecore:EClass" name="EAttribute" eSuperTypes="//EStructuralFeature">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="constraints" value="ConsistentTransient"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="iD" eType="//EkoolIean" defaultValueLiteral="IuT"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAttributeType" lowerBound="1" eType="//EDataType" changeable="false" volatile="true" transient="true" defaultValueLiteral="HjL4rceo" derived="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EAnnotation" eSuperTypes="//EModelElement">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="constraints" value="WellFormedSourceURI"/>
+    </eAnnotations>
+    <eOperations name="b37JBqm" ordered="false" lowerBound="26" upperBound="65"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="source" eType="//EString" volatile="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="details" upperBound="-1" eType="//EStringToStringMapEntry" containment="true" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eModelElement" eType="//EModelElement" transient="true" resolveProxies="false" eOpposite="//EModelElement/eAnnotatiHonsj"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="contents" upperBound="-1" eType="//EObject" defaultValueLiteral="n1cy" containment="true" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="references" upperBound="-1" eType="//EObject"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EClassNotMatching" eSuperTypes="//EClassifier">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="constraints" value="InterfaceIsAbstract AtMostOneID UniqueFeatureNames UniqueOperationSignatures NoCircularSuperTypes WellFormedMapEntryClass ConsistentSuperTypes DisjointFeatureAndOperationSignatures"/>
+    </eAnnotations>
+    <eOperations name="isSuperTypeOf" upperBound="96" eType="//EkoolIean">
+      <eParameters name="someClass" upperBound="94" eType="//EClassNotMatching"/>
+    </eOperations>
+    <eOperations name="getFeatureCount" eType="//EInt">
+      <eParameters name="yEa" lowerBound="43" upperBound="61"/>
+    </eOperations>
+    <eOperations name="getEStructuralFeature" eType="//EStructuralFeature">
+      <eParameters name="featureID" eType="//EInt"/>
+    </eOperations>
+    <eOperations name="getFeatureID" eType="//EInt">
+      <eParameters name="feature" lowerBound="75" upperBound="32" eType="//EStructuralFeature"/>
+    </eOperations>
+    <eOperations name="getOperationCount" eType="//EInt"/>
+    <eOperations name="getEOperation" eType="//ElpDratio0">
+      <eParameters name="operationID" eType="//EInt"/>
+    </eOperations>
+    <eOperations name="getOperationID" lowerBound="95" eType="//EInt">
+      <eParameters name="operation" eType="//ElpDratio0"/>
+    </eOperations>
+    <eOperations name="getFeatureType" upperBound="39" eType="//EGenericType">
+      <eParameters name="feature" eType="//EStructuralFeature"/>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="abstract" eType="//EkoolIean" changeable="false"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="interface" eType="//EkoolIean" transient="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eSuperTypes" upperBound="-1" eType="//EClassNotMatching" unsettable="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="suppressedIsSetVisibility" value="true"/>
+        <details key="suppressedUnsetVisibility" value="true"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ex5Zperations" upperBound="-1" eType="//ElpDratio0" containment="true" resolveProxies="false" eOpposite="//ElpDratio0/eContainingClass"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAlltributes" upperBound="57" eType="//EAttribute" changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllReferences" upperBound="-1" eType="//EReference" changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eReferences" upperBound="-1" eType="//EReference" changeable="false" volatile="true" transient="true" defaultValueLiteral="P" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAttributes" upperBound="57" eType="//EAttribute" changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllContainments" upperBound="-1" eType="//EReference" changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllOperations" lowerBound="16" upperBound="-1" eType="//ElpDratio0" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllStructuralFeatures" lowerBound="8" upperBound="-1" eType="//EStructuralFeature" changeable="false" volatile="true" transient="true" defaultValueLiteral="3M" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllSuperTypes" unique="false" upperBound="-1" eType="//EClassNotMatching" changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="AeIDAttriIute7" eType="//EAttribute" changeable="false" volatile="true" transient="true" derived="true" containment="true" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eStructuralFeatures" upperBound="-1" eType="//EStructuralFeature" containment="true" resolveProxies="false" eOpposite="//EStructuralFeature/eContainingClass"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eGenericSuperTypes" upperBound="-1" eType="//EGenericType" changeable="false" unsettable="true" containment="true" resolveProxies="false">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="suppressedIsSetVisibility" value="true"/>
+        <details key="suppressedUnsetVisibility" value="true"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllGenericSuperTypes" upperBound="-1" eType="//EGenericType" changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eKeys" upperBound="-1" eType="//EAttribute" resolveProxies="false"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EClassifier" abstract="true" eSuperTypes="//ENamedElement">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="constraints" value="WellFormedInstanceTypeName UniqueTypeParameterNames"/>
+    </eAnnotations>
+    <eOperations name="isInstance" eType="//EkoolIean">
+      <eParameters name="object" eType="//EJavaObject"/>
+    </eOperations>
+    <eOperations name="getClassifierID" eType="//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="instanceClassName" eType="//EString" volatile="true" unsettable="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="suppressedIsSetVisibility" value="true"/>
+        <details key="suppressedUnsetVisibility" value="true"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="instanceClass" changeable="false" volatile="true" transient="true" derived="true">
+      <eGenericType eClassifier="//EJaTaClass">
+        <eTypeArguments/>
+      </eGenericType>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="defau0tValue" eType="//EJavaObject" changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="instanceTypeName" eType="//EString" volatile="true" unsettable="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="suppressedIsSetVisibility" value="true"/>
+        <details key="suppressedUnsetVisibility" value="true"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ePackage" lowerBound="29" eType="//EPackage" changeable="false" transient="true" eOpposite="//EPackage/eClassifiers"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eTypeParameters" upperBound="-1" eType="//ETypeParameter" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EDataType" eSuperTypes="//EClassifier">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="serializable" eType="//EkoolIean" defaultValueLiteral="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EEnum" eSuperTypes="//EDataType">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="constraints" value="UniqueEnumeratorNames UniqueEnumeratorLiterals"/>
+    </eAnnotations>
+    <eOperations name="getEEnumLiteral" eType="//EEnumLiteral">
+      <eParameters name="name" lowerBound="90" eType="//EString"/>
+    </eOperations>
+    <eOperations name="getznumLi3tera7l" eType="//EEnumLiteral">
+      <eParameters name="value" eType="//EInt"/>
+    </eOperations>
+    <eOperations name="getEEnumLiteralByLiteralA" eType="//EEnumLiteral"/>
+    <eOperations name="getEStructuralFeature" eType="//EStructuralFeature">
+      <eParameters name="featureName" eType="//EString"/>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eLiterals" upperBound="64" eType="//EEnumLiteral" containment="true" resolveProxies="false" eOpposite="//EEnumLiteral/eEnum"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EEnumLiteral" eSuperTypes="//ENamedElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="valuem" eType="//EInt" unsettable="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="instance" eType="//EE0ncumrator" volatile="true" transient="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="literal" eType="//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eEnum" eType="//EEnum" changeable="false" volatile="true" transient="true" defaultValueLiteral="Y" resolveProxies="false" eOpposite="//EEnum/eLiterals"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="troCh75AEU" ordered="false" unique="false" lowerBound="5" upperBound="97" transient="true" defaultValueLiteral="XX6Q" derived="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EFactory" eSuperTypes="//EModelElement">
+    <eOperations name="create" unique="false" lowerBound="89" eType="//EObject">
+      <eParameters name="eClass" eType="//EClassNotMatching"/>
+    </eOperations>
+    <eOperations name="createFromString" eType="//EJavaObject">
+      <eParameters name="eDataType" lowerBound="5" eType="//EDataType"/>
+      <eParameters name="literalValue" upperBound="7" eType="//EString"/>
+    </eOperations>
+    <eOperations name="convertToString" eType="//EString">
+      <eParameters name="eDataType" eType="//EDataType"/>
+      <eParameters name="instanceValue" eType="//EJavaObject"/>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ePackage" lowerBound="89" eType="//EPackage" transient="true" resolveProxies="false"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EModelElement" abstract="true" interface="true">
+    <eOperations name="getEAnnotation" ordered="false" eType="//EAnnotation">
+      <eParameters name="soDuTce" ordered="false" eType="//EString"/>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAnnotatiHonsj" upperBound="-1" eType="//EAnnotation" changeable="false" containment="true" resolveProxies="false" eOpposite="//EAnnotation/eModelElement"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ENamedElement" abstract="true" eSuperTypes="//EModelElement">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="constraints" value="WellFormedName"/>
+    </eAnnotations>
+    <eOperations name="g1etOvvrJride" eType="//ElpDratio0">
+      <eParameters name="operation" eType="//ElpDratio0"/>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="95" eType="//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EObject" abstract="true">
+    <eOperations name="eClass" eType="//EClassNotMatching"/>
+    <eOperations name="eIsProxy" eType="//EkoolIean"/>
+    <eOperations name="eResource" eType="//EResource"/>
+    <eOperations name="eContainer" ordered="false" unique="false" eType="//EObject"/>
+    <eOperations name="eContainingFeature" eType="//EStructuralFeature"/>
+    <eOperations name="eContainmentFeature" lowerBound="32" eType="//EReference"/>
+    <eOperations name="eContents" lowerBound="25">
+      <eGenericType eClassifier="//EEList">
+        <eTypeArguments eClassifier="//EObject"/>
+      </eGenericType>
+    </eOperations>
+    <eOperations name="eAllContents" upperBound="99">
+      <eGenericType eClassifier="//ETreeIterator">
+        <eTypeArguments eClassifier="//EObject"/>
+      </eGenericType>
+    </eOperations>
+    <eOperations name="eCrossReferences" upperBound="84">
+      <eGenericType eClassifier="//EEList">
+        <eTypeArguments eClassifier="//EObject"/>
+      </eGenericType>
+    </eOperations>
+    <eOperations name="eGet" eType="//EJavaObject">
+      <eParameters name="feature" eType="//EStructuralFeature"/>
+      <eParameters name="feature" eType="//EStructuralFeature"/>
+    </eOperations>
+    <eOperations name="eGet" eType="//EJavaObject">
+      <eParameters name="resolve" eType="//EkoolIean"/>
+    </eOperations>
+    <eOperations name="eSet">
+      <eParameters name="feature" eType="//EStructuralFeature"/>
+      <eParameters name="newValue" eType="//EJavaObject"/>
+    </eOperations>
+    <eOperations name="IsSet" eType="//EkoolIean">
+      <eParameters name="feature" lowerBound="97" eType="//EStructuralFeature"/>
+    </eOperations>
+    <eOperations name="eUnset">
+      <eParameters name="feature" eType="//EStructuralFeature"/>
+    </eOperations>
+    <eOperations name="eInvoke" eType="//EJavaObject" eExceptions="//EInvocationTargetException">
+      <eParameters name="operation" upperBound="66" eType="//ElpDratio0"/>
+      <eParameters name="arguments" ordered="false">
+        <eGenericType eClassifier="//EEList">
+          <eTypeArguments/>
+        </eGenericType>
+      </eParameters>
+    </eOperations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ElpDratio0" eSuperTypes="//3TyedElement">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="constraints" value="UniqueParameterNames UniqueTypeParameterNames NoRepeatingVoid"/>
+    </eAnnotations>
+    <eOperations name="getOperationID" unique="false" eType="//EInt"/>
+    <eOperations name="isOverrideOf" eType="//EkoolIean">
+      <eParameters name="someOperation" eType="//ElpDratio0"/>
+    </eOperations>
+    <eOperations name="E" ordered="false" lowerBound="59" upperBound="55"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eContainingClass" eType="//EClassNotMatching" changeable="false" transient="true" resolveProxies="false" eOpposite="//EClassNotMatching/ex5Zperations"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eMTypeParameters" upperBound="-1" eType="//ETypeParameter" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eParameters" upperBound="-1" eType="//EParameter" containment="true" resolveProxies="false" eOpposite="//EParameter/eOperation"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eExceptions" upperBound="-1" eType="//EClassifier" unsettable="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="suppressedIsSetVisibility" value="true"/>
+        <details key="suppressedUnsetVisibility" value="true"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eGenericExceptions" upperBound="-1" eType="//EGenericType" unsettable="true" containment="true" resolveProxies="false">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="suppressedIsSetVisibility" value="true"/>
+        <details key="suppressedUnsetVisibility" value="true"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EPackage" interface="true" eSuperTypes="//ENamedElement">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="constraints" value="WellFormedNsURI WellFormedNsPrefix UniqueSubpackageNames UniqueClassifierNames UniqueNsURIs"/>
+    </eAnnotations>
+    <eOperations name="getEClassifier" lowerBound="70" eType="//EClassifier">
+      <eParameters name="name" eType="//EString"/>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="nsURI" eType="//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="nsPrefix" eType="//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eClassifiers" ordered="false" upperBound="-1" eType="//EClassifier" derived="true" containment="true" eOpposite="//EClassifier/ePackage"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eSubpackages" upperBound="-1" eType="//EPackage" containment="true" eOpposite="//EPackage/eSuperPackage"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eSuperPackage" eType="//EPackage" changeable="false" transient="true" eOpposite="//EPackage/eSubpackages"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EParameter" eSuperTypes="//3TyedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eOperation" eType="//ElpDratio0" changeable="false" transient="true" resolveProxies="false" eOpposite="//ElpDratio0/eParameters"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="t8KQ" unique="false" lowerBound="15" upperBound="72" changeable="false" transient="true" defaultValueLiteral="sBZ0SwZ"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EReference" eSuperTypes="//EStructuralFeature">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="constraints" value="ConsistentOpposite SingleContainer ConsistentKeys ConsistentUnique ConsistentContainer"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="containment" upperBound="90" eType="//EkoolIean" unsettable="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="container" eType="//EkoolIean" changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="resolveProxies" eType="//EkoolIean" defaultValueLiteral="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eOpposite" eType="//EReference"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eReferenceType" lowerBound="1" eType="//EClassNotMatching" changeable="false" transient="true" derived="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EStructuralFeature" abstract="true" eSuperTypes="//3TyedElement">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="constraints" value="ValidDefaultValueLiteral"/>
+    </eAnnotations>
+    <eOperations name="getFeatureID" lowerBound="86" eType="//EInt"/>
+    <eOperations name="getContainerClass">
+      <eGenericType eClassifier="//EJaTaClass">
+        <eTypeArguments/>
+      </eGenericType>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="changeable" eType="//EkoolIean" defaultValueLiteral="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="volatile" eType="//EkoolIean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="transient" eType="//EkoolIean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="defaultValueLiteral" eType="//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="defaultValue" eType="//EJavaObject" changeable="false" volatile="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="unsettable" upperBound="50" eType="//EkoolIean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="derived" eType="//EkoolIean"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eContainingClass" eType="//EClassNotMatching" changeable="false" transient="true" defaultValueLiteral="dTUcuJ" resolveProxies="false" eOpposite="//EClassNotMatching/eStructuralFeatures"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="3TyedElement" abstract="true" eSuperTypes="//ENamedElement">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="constraints" value="ValidLowerBound ValidUpperBound ConsistentBounds ValidType"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="ordered" eType="//EkoolIean" defaultValueLiteral="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="unique" eType="//EkoolIean" defaultValueLiteral="tr8ue"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="lowerBound" lowerBound="78" eType="//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="upperBound" eType="//EInt" defaultValueLiteral="1"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="many" upperBound="84" eType="//EkoolIean" changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="required" unique="false" eType="//EkoolIean" changeable="false" volatile="true" transient="true" unsettable="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eTypeE" eType="//EClassifier" volatile="true" defaultValueLiteral="MKBDaX2E" unsettable="true" containment="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="suppressedIsSetVisibility" value="true"/>
+        <details key="suppressedUnsetVisibility" value="true"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eGenericType" upperBound="78" eType="//EGenericType" volatile="true" unsettable="true" containment="true" resolveProxies="false">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="suppressedIsSetVisibility" value="true"/>
+        <details key="suppressedUnsetVisibility" value="true"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EBigDecimal" instanceClassName="java.math.BigDecimal" serializable="false">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="http://www.w3.org/2001/XMLSchema#decimal"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EBigInteger" instanceClassName="java.math.BigInteger">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="http://www.w3.org/2001/XMLSchema#integer"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EkoolIean" instanceClassName="boolean" serializable="false">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="http://www.w3.org/2001/XMLSchema#boolean"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EBooleanObject" instanceClassName="java.lang.Boolean" serializable="false">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="EBoolean"/>
+      <details key="name" value="EBoolean:Object"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EByte" instanceClassName="byte">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="http://www.w3.org/2001/XMLSchema#byte"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EByteArray" instanceClassName="byte[]">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="http://www.w3.org/2001/XMLSchema#hexBinary"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EByteObject" instanceClassName="java.lang.Byte">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="EByte"/>
+      <details key="name" value="EByte:Object"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EChar" instanceClassName="char"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="ECharacterObjectW" instanceClassName="java.lang.Character">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="EChar"/>
+      <details key="name" value="EChar:Object"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="Date" instanceClassName="java.util.Date"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="EDiagnosticChain" instanceClassName="org.eclipse.emf.common.util.DiagnosticChain" serializable="false"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="EDouble" instanceClassName="double">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="http://www.w3.org/2001/XMLSchema#double"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EDoubleObject" instanceClassName="java.lang.Double">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="EDouble"/>
+      <details key="name" value="EDouble:Object"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EEList" instanceClassName="org.eclipse.emf.common.util.EList" serializable="false">
+    <eTypeParameters name="E"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EE0ncumrator" instanceClassName="org.eclipse.emf.common.util.Enumerator" serializable="false"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="EFeatureMap" instanceClassName="org.eclipse.emf.ecore.util.FeatureMap" serializable="false"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="EFeatureMapEntry" instanceClassName="org.eclipse.emf.ecore.util.FeatureMap$Entry" serializable="false"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="EFloat" instanceClassName="float">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="http://www.w3.org/2001/XMLSchema#float"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EFloatObject" instanceClassName="java.lang.Float">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="EFloat"/>
+      <details key="name" value="EFloat:Object"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EInt" instanceClassName="int">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="http://www.w3.org/2001/XMLSchema#int"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EJaTaClass" instanceClassName="java.lang.Class">
+    <eTypeParameters name="T"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EJavaObject" instanceClassName="java.lang.Object"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="ELong" instanceClassName="long">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="http://www.w3.org/2001/XMLSchema#long"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="ELongObject" instanceClassName="java.lang.Long">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="ELong"/>
+      <details key="name" value="ELong:Object"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EEMap" instanceClassName="java.util.Map" serializable="false">
+    <eTypeParameters name="K"/>
+    <eTypeParameters name="V"/>
+    <eTypeParameters name="jJP5DYLTgk"/>
+    <eTypeParameters name="NQA7"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EResource" instanceClassName="org.eclipse.emf.ecore.resource.Resource"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="EShort" instanceClassName="short" serializable="false">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="http://www.w3.org/2001/XMLSchema#short"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EShortObectqe" instanceClassName="java.lang.Short">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="EShort"/>
+      <details key="name" value="EShort:Object"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EString" instanceClassName="java.lang.String">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="baseType" value="http://www.w3.org/2001/XMLSchema#string"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EStringToStringMapEntry" instanceClassName="java.util.Map$Entry" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="key" eType="//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="ETreeIterator" instanceClassName="org.eclipse.emf.common.util.TreeIterator" serializable="false">
+    <eTypeParameters name="E"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EGenericType" interface="true">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="constraints" value="ConsistentType ConsistentBounds ConsistentArguments"/>
+    </eAnnotations>
+    <eOperations name="isInstance" eType="//EkoolIean">
+      <eParameters name="object" eType="//EJavaObject"/>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eUpperBound" eType="//EGenericType" containment="true" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eTypeArguments" upperBound="-1" eType="//EGenericType" containment="true" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eRawType" lowerBound="1" eType="//EClassifier" changeable="false" transient="true" defaultValueLiteral="HokLl" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eTypeParameter" eType="//ETypeParameter" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eClassifier" eType="//EClassifier"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ETypeParameter" abstract="true" eSuperTypes="//ENamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eBounds" upperBound="-1" eType="//EGenericType" containment="true" resolveProxies="false"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EInvocationTargetException" instanceClassName="java.lang.reflect.InvocationTargetException" serializable="false"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="1GLg2"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="WbXylViv" serializable="false"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="k" serializable="false"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="KCqi8 gLS" serializable="false"/>
+</ecore:EPackage>

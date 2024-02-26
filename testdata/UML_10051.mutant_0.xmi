@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="ASCII"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML">
+  <uml:Model name="First class">
+    <packageImport>
+      <importedPackage href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#/"/>
+    </packageImport>
+    <packagedElement xsi:type="uml:Class" name="Document">
+      <ownedAttribute name="number" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+      <ownedAttribute name="data" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Class" name="Waybill">
+      <ownedAttribute name="status" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Boolean"/>
+      </ownedAttribute>
+      <ownedAttribute name="dataTime" visibility="private" type="/0/DataType"/>
+      <ownedAttribute name="sum" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+      <ownedAttribute name="weight" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+        <defaultValue xsi:type="uml:LiteralInteger" name="DpuF9JFZ"/>
+      </ownedAttribute>
+      <ownedAttribute name="note" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//String"/>
+      </ownedAttribute>
+      <ownedAttribute name="fullName" visibility="private" isStatic="true">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//String"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Class" name="Order">
+      <generalization general="/0/Document" isSubstitutable="false"/>
+      <ownedAttribute name="status" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+      <ownedAttribute name="dataTime" visibility="private" type="/0/DataType"/>
+      <ownedAttribute name="dataPay" visibility="private" type="/0/Double"/>
+      <ownedAttribute name="price" visibility="private" isLeaf="true">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+      <ownedOperation name="cancel" visibility="private">
+        <ownedParameter name="returnParameter" isUnique="false" direction="return">
+          <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Boolean"/>
+          <upperValue xsi:type="uml:LiteralInteger" name="11cji" visibility="public" value="43"/>
+        </ownedParameter>
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Class" name="Warehouse">
+      <ownedAttribute name="number" visibility="private" isReadOnly="true">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Class" name="StockItem">
+      <ownedAttribute name="quantity" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Class" name="OrderLine">
+      <ownedAttribute name="quantity" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+      <ownedAttribute name="priceWithTaxes" visibility="private" type="/0/Double"/>
+      <ownedAttribute name="sum" visibility="private" isDerivedUnion="true">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Class" name="ConsignmentNote">
+      <ownedAttribute name="quantity" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+      <ownedAttribute name="weight" visibility="private" isDerivedUnion="true">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+      <ownedAttribute name="price" visibility="private" type="/0/Double"/>
+      <ownedAttribute name="sum" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+      <nestedClassifier xsi:type="uml:Association" name="2Ji5E" visibility="public" isLeaf="true" isAbstract="true"/>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Class" name="Product">
+      <ownedAttribute name="productCode" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+      <ownedAttribute name="name" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//String"/>
+      </ownedAttribute>
+      <ownedAttribute name="unit" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+      <ownedAttribute name="description" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//String"/>
+      </ownedAttribute>
+      <ownedAttribute name="price" visibility="private"/>
+    </packagedElement>
+    <packagedElement xsi:type="uml:DataType" name="Double"/>
+    <packagedElement xsi:type="uml:DataType" name="DataType"/>
+    <packagedElement xsi:type="uml:DataType" name="Datanype2"/>
+    <packagedElement xsi:type="uml:Class" name="Employee">
+      <ownedAttribute name="tableNumber" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+      <ownedAttribute name="surname" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//String"/>
+      </ownedAttribute>
+      <ownedAttribute name="firstName" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//String"/>
+      </ownedAttribute>
+      <ownedAttribute name="patronymic" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//String"/>
+      </ownedAttribute>
+      <ownedAttribute name="phoneNumber" visibility="private">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//Integer"/>
+      </ownedAttribute>
+      <ownedAttribute name="eMail" visibility="private" isDerivedUnion="true">
+        <type xsi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#//String"/>
+      </ownedAttribute>
+      <nestedClassifier xsi:type="uml:DataType" name="DxUH" visibility="public" isAbstract="true"/>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Association" name="Waybill_ConsignmentNote" memberEnd="/0/Waybill_ConsignmentNote/a /0/Waybill_ConsignmentNote/a.1" navigableOwnedEnd="/0/Waybill_ConsignmentNote/a /0/Waybill_ConsignmentNote/a.1">
+      <ownedEnd name="a" type="/0/ConsignmentNote" aggregation="composite" association="/0/Waybill_ConsignmentNote">
+        <lowerValue xsi:type="uml:LiteralInteger"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+      <ownedEnd name="a" type="/0/Waybill" association="/0/Waybill_ConsignmentNote">
+        <lowerValue xsi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Association" name="Order_OrderLine" isAbstract="true" memberEnd="/0/Order_OrderLine/a /0/Order_OrderLine/@ownedEnd.1" navigableOwnedEnd="/0/Order_OrderLine/a /0/Order_OrderLine/@ownedEnd.1">
+      <ownedEnd name="a" type="/0/OrderLine" aggregation="composite" association="/0/Order_OrderLine">
+        <lowerValue xsi:type="uml:LiteralInteger" name="yNM8"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+      <ownedEnd type="/0/Order" association="/0/Order_OrderLine">
+        <name xsi:nil="true"/>
+        <lowerValue xsi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Association" name="Warehouse_StockItem" isAbstract="true" memberEnd="/0/Warehouse_StockItem/a /0/Warehouse_StockItem/a.1" navigableOwnedEnd="/0/Warehouse_StockItem/a /0/Warehouse_StockItem/a.1">
+      <ownedEnd name="a" type="/0/StockItem" aggregation="composite" association="/0/Warehouse_StockItem">
+        <lowerValue xsi:type="uml:LiteralInteger"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" name="6" value="*"/>
+      </ownedEnd>
+      <ownedEnd name="a" type="/0/Warehouse" association="/0/Warehouse_StockItem">
+        <lowerValue xsi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Association" name="Product_OrderLine" isDerived="true" memberEnd="/0/Product_OrderLine/a" navigableOwnedEnd="/0/Product_OrderLine/a">
+      <ownedEnd name="a" type="/0/OrderLine" isReadOnly="true" association="/0/Product_OrderLine">
+        <lowerValue xsi:type="uml:LiteralInteger"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Association" name="Employee_Warehouse" memberEnd="/0/Employee_Warehouse/a /0/Employee_Warehouse/a.1" navigableOwnedEnd="/0/Employee_Warehouse/a /0/Employee_Warehouse/a.1">
+      <ownedEnd name="a" type="/0/Warehouse" isDerivedUnion="true" association="/0/Employee_Warehouse">
+        <lowerValue xsi:type="uml:LiteralInteger"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+      <ownedEnd name="a" type="/0/Employee" association="/0/Employee_Warehouse">
+        <lowerValue xsi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Association" name="Emp1NXoyee_Waybill" memberEnd="/0/Emp1NXoyee_Waybill/a /0/Emp1NXoyee_Waybill/a.1" navigableOwnedEnd="/0/Emp1NXoyee_Waybill/a /0/Emp1NXoyee_Waybill/a.1">
+      <ownedEnd name="a" type="/0/Waybill" association="/0/Emp1NXoyee_Waybill">
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" name="kYQkl" value="48"/>
+      </ownedEnd>
+      <ownedEnd name="a" type="/0/Employee" association="/0/Emp1NXoyee_Waybill">
+        <lowerValue xsi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="13"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Association" name="Product_StockItem" memberEnd="/0/Product_StockItem/a /0/Product_StockItem/a.1" navigableOwnedEnd="/0/Product_StockItem/a /0/Product_StockItem/a.1">
+      <ownedEnd name="a" type="/0/StockItem" association="/0/Product_StockItem">
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+      <ownedEnd name="a" type="/0/Product" association="/0/Product_StockItem">
+        <lowerValue xsi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Association" name="ConsignmentNote_Product" memberEnd="/0/ConsignmentNote_Product/a /0/ConsignmentNote_Product/a.1" navigableOwnedEnd="/0/ConsignmentNote_Product/a /0/ConsignmentNote_Product/a.1">
+      <ownedEnd name="a" isStatic="true" type="/0/Product" isID="true" association="/0/ConsignmentNote_Product">
+        <lowerValue xsi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+      <ownedEnd name="a" type="/0/ConsignmentNote" association="/0/ConsignmentNote_Product">
+        <lowerValue xsi:type="uml:LiteralInteger"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="29"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Association" name="Waybill_Order" memberEnd="/0/Waybill_Order/a /0/Waybill_Order/a.1" navigableOwnedEnd="/0/Waybill_Order/a /0/Waybill_Order/a.1">
+      <ownedEnd name="a" type="/0/Order" association="/0/Waybill_Order">
+        <lowerValue xsi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" name="zQTZsirKfy" value="1"/>
+      </ownedEnd>
+      <ownedEnd name="a" type="/0/Waybill" association="/0/Waybill_Order">
+        <lowerValue xsi:type="uml:LiteralInteger" name="O5S" value="40"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Association" name="qmrder_Employee" memberEnd="/0/qmrder_Employee/a /0/qmrder_Employee/a.1" navigableOwnedEnd="/0/qmrder_Employee/a /0/qmrder_Employee/a.1">
+      <ownedEnd name="a" type="/0/Employee" association="/0/qmrder_Employee">
+        <lowerValue xsi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+      <ownedEnd name="a" type="/0/Order" association="/0/qmrder_Employee">
+        <lowerValue xsi:type="uml:LiteralInteger"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Class" name="obPteqZYwu" visibility="public" isFinalSpecialization="true" isActive="true"/>
+    <packagedElement xsi:type="uml:LiteralInteger" name="MJS7rZOoMC" visibility="public" value="64"/>
+  </uml:Model>
+  <uml:Property name="gMTw2SUK" visibility="public" isStatic="true" isOrdered="true" isUnique="false" isReadOnly="true" isDerived="true" isDerivedUnion="true" isID="true"/>
+</xmi:XMI>

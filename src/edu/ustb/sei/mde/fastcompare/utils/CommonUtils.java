@@ -1,10 +1,13 @@
 package edu.ustb.sei.mde.fastcompare.utils;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 import com.google.common.collect.FluentIterable;
 
@@ -114,22 +117,63 @@ public class CommonUtils {
     }
 
 
-    static public void update(CRC32 crc32, long value) {
-        int h = (int) (value >>> 32);
+    static public void update(Checksum checksum, long value) {
         int l = (int) (value & 0xFFFFFFFFL);
-        crc32.update(h);
-        crc32.update(l);
+        int h = (int) (value >>> 32);
+        checksum.update(l);
+        checksum.update(h);
     }
 
-    static public void update(CRC32 crc32, int value) {
-        crc32.update(value);
+    static public void update(Checksum checksum, int value) {
+        checksum.update(value);
     }
 
-    static public void update(CRC32 crc32, double value) {
-        update(crc32, Double.doubleToLongBits(value));
+    static public void update(Checksum checksum, double value) {
+        update(checksum, Double.doubleToLongBits(value));
     }
 
-    static public void update(CRC32 crc32, String str) {
-        crc32.update(str.getBytes());
+    static public void update(Checksum checksum, String str) {
+        checksum.update(str.getBytes());
+    }
+
+    static private MessageDigest md5;
+    static private CRC64 __crc64 = new CRC64();
+    static {
+        try {
+            md5 = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+
+    static public void resetMD5() {
+        md5.reset();
+    }
+    static public long getMD5Value() {
+        __crc64.reset();
+        __crc64.update(md5.digest());
+        return __crc64.getValue();
+    }
+
+    static public void updateMD5(long value) {
+        int l = (int) (value & 0xFFFFFFFFL);
+        int h = (int) (value >>> 32);
+        updateMD5(l);
+        updateMD5(h);
+    }
+
+    static public void updateMD5(int value) {
+        md5.update((byte) (value & 0xFF));
+        md5.update((byte) ((value >>> 8) & 0xFF));
+        md5.update((byte) ((value >>> 16) & 0xFF));
+        md5.update((byte) ((value >>> 24) & 0xFF));
+    }
+
+    static public void updateMD5(double value) {
+        updateMD5(Double.doubleToLongBits(value));
+    }
+
+    static public void updateMD5(String str) {
+        md5.update(str.getBytes());
     }
 }

@@ -36,7 +36,7 @@ public class HashLoHi implements SimHashValue {
             } else {
                 double hs = simHi((HashLoHi) value);
                 double ls = simLo((HashLoHi) value);
-                return (8 * hs + ls) / 9.0;
+                return 10 * hs * ls / (9 * ls + hs);
             }
         } else {
             return 0;
