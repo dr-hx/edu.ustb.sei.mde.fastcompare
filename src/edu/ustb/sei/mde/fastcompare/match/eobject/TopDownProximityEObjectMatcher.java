@@ -5,8 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Function;
-
 import org.eclipse.emf.compare.CompareFactory;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Match;
@@ -18,7 +16,6 @@ import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapterWithStructuralCheck
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex.Side;
 import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
-import edu.ustb.sei.mde.fastcompare.utils.ProfileCounter;
 import edu.ustb.sei.mde.fastcompare.utils.Triple;
 
 public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
@@ -302,7 +299,6 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
 		return resultMatch;
 	}
 
-    // FIXME: it produces wrong output now and it maps a subtree more than one time
     private Match findUniqueStructureIdenticalSubtree(Comparison inProgress, EObject eObj, Side passedObjectSide, Side sideToFind, Match partialMatch,
 			Iterable<EObject> candidates) {
 		ElementIndexAdapterWithStructuralChecksum adapter = ElementIndexAdapter.getAdapter(eObj);
@@ -330,66 +326,45 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
         final int height = adapter.height;
         if(size < 2 && height < 2) return partialMatch;
 
-		if (partialMatch == null) {
-            EObject found = null;
-			for (EObject cand : candidates) {
-                if(cand.eClass() != eObj.eClass()) continue;
-				ElementIndexAdapterWithStructuralChecksum cAdapter = ElementIndexAdapter.getAdapter(cand);
-				if(cAdapter != null) {
-					if(MatchUtil.hasMatchFor(cand, inProgress, passedObjectSide)) continue;
-                    final long ctreeKey = cAdapter.getTreeStructuralChecksum();
-					double dbg;
-					if (size == cAdapter.size && height == cAdapter.height && ctreeKey == subtreeKey 
-						&& (dbg = adapter.treeSimHash.similarity(cAdapter.treeSimHash)) > 0.85) {
-                        if(found == null) {
-                            found = cand;
-                        } else {
-                            return null;
-                        }
-					}
-				}
-			}
+		EObject found = null;
+		double bestSim = 0;
 
-            if(found != null) {
-                Match cMatch = inProgress.getMatch(found);
-                // we probably have to consider the containment position in the future
-                if (cMatch == null) {
-                    partialMatch = CompareFactory.eINSTANCE.createMatch();
-                    MatchUtil.setMatch(partialMatch, eObj, passedObjectSide);
-                    MatchUtil.setMatch(partialMatch, found, sideToFind);
-                    return partialMatch;
-                } else if (MatchUtil.tryFillMatched(cMatch, eObj, passedObjectSide)) {
-                    return cMatch;
-                }
-            } 
-            return null;
-		} else {
-            EObject found = null;
-			for (EObject cand : candidates) {
-                if(cand.eClass() != eObj.eClass()) continue;
-				ElementIndexAdapterWithStructuralChecksum cAdapter = ElementIndexAdapter.getAdapter(cand);
-				if(cAdapter != null) {
-					if(MatchUtil.hasMatchFor(cand, inProgress, passedObjectSide)) continue;
-					final long ctreeKey = cAdapter.getTreeStructuralChecksum();
-					if (size == cAdapter.size && height == cAdapter.height && ctreeKey == subtreeKey
-						&& adapter.treeSimHash.similarity(cAdapter.treeSimHash) > 0.7) {
-                        if(found == null) {
-                            found = cand;
-                        } else {
-                            return partialMatch;
-                        }
+		for (EObject cand : candidates) {
+			if(cand.eClass() != eObj.eClass()) continue;
+			ElementIndexAdapterWithStructuralChecksum cAdapter = ElementIndexAdapter.getAdapter(cand);
+			if(cAdapter != null) {
+				if(MatchUtil.hasMatchFor(cand, inProgress, passedObjectSide)) continue;
+				final long ctreeKey = cAdapter.getTreeStructuralChecksum();
+				if (size == cAdapter.size && height == cAdapter.height && ctreeKey == subtreeKey) {
+					final double sim = adapter.treeSimHash.similarity(cAdapter.treeSimHash);
+					if(sim > 0.85) {
+						if(found == null || (sim > 0.96 && bestSim < 0.93)) {
+							found = cand;
+							bestSim = sim;
+						} else {
+							return partialMatch;
+						}
 					}
 				}
 			}
-            if(found != null) {
-                Match cMatch = inProgress.getMatch(found);
-                if (cMatch == null) {
-                    MatchUtil.setMatch(partialMatch, found, sideToFind);
-                    return partialMatch;
-                }
-            }
-            return partialMatch;
 		}
+		
+		if(found != null) {
+			Match cMatch = inProgress.getMatch(found);
+			// we probably have to consider the containment position in the future
+			if (cMatch == null) {
+				if(partialMatch == null) {
+					partialMatch = CompareFactory.eINSTANCE.createMatch();
+					MatchUtil.setMatch(partialMatch, eObj, passedObjectSide);
+				}
+				MatchUtil.setMatch(partialMatch, found, sideToFind);
+				return partialMatch;
+			} else if (MatchUtil.tryFillMatched(cMatch, eObj, passedObjectSide)) {
+				return cMatch;
+			}
+		}
+
+		return partialMatch;
 	}
     // static public ProfileCounter counter = new ProfileCounter();
     
