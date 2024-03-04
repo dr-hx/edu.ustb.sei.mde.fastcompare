@@ -1,5 +1,6 @@
 package edu.ustb.sei.mde.fastcompare.match.eobject;
 
+import java.io.PrintStream;
 import java.util.Map;
 import java.util.function.BiPredicate;
 
@@ -18,6 +19,16 @@ public class CachingDistanceFunction implements DistanceFunction {
 		distanceCache = new AccessBasedLRUCache<TupleKey<EObject, DistanceFunction>, Double>(1<<16, 1<<10, .75F);
 	}
 
+	// static public int totalIdcheck = 0;
+	// static public int totalDistcheck = 0;
+
+	// static public void dump(DistanceFunction meter, PrintStream out) {
+	// 	out.println(String.format("#ID	%d / %d", ((EditionDistance)meter).idcheck, totalIdcheck));
+	// 	out.println(String.format("#DI	%d / %d", ((EditionDistance)meter).distanceCount, totalDistcheck));
+	// 	totalIdcheck = 0;
+	// 	totalDistcheck = 0;
+	// }
+
 	@Override
 	public double distance(Comparison inProgress, EObject a, EObject b, Boolean haveSameContainer) {
 		TupleKey<EObject, DistanceFunction> key = new TupleKey<EObject, DistanceFunction>(a, b, this, TupleKey.otherPred);
@@ -31,6 +42,7 @@ public class CachingDistanceFunction implements DistanceFunction {
 	}
 
 	public double distance(Comparison inProgress, EObject a, EObject b, Boolean haveSameContainer, boolean canCache) {
+		// totalDistcheck ++;
 		if(canCache) {
 			return this.distance(inProgress, a, b, haveSameContainer);
 		} else 
@@ -44,6 +56,7 @@ public class CachingDistanceFunction implements DistanceFunction {
 
 	@Override
 	public boolean areIdentic(Comparison inProgress, EObject a, EObject b) {
+		// totalIdcheck ++;
 		return meter.areIdentic(inProgress, a, b);
 	}
 

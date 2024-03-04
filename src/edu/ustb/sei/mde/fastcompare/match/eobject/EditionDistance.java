@@ -485,7 +485,7 @@ public class EditionDistance implements DistanceFunction {
         this.orderChangeCoef = orderChangeCoef;
     }
 
-	private int distanceCount = 0;
+	public int distanceCount = 0;
 	private ProfileCounter count = new ProfileCounter();
 	public void dump() {
 		System.out.println("Distance "+distanceCount);
@@ -507,7 +507,7 @@ public class EditionDistance implements DistanceFunction {
 		return measuredDist;
 	}
 
-	private int idcheck = 0;
+	public int idcheck = 0;
 	/**
 	 * {@inheritDoc}
 	 */
