@@ -68,6 +68,10 @@ public class ClassConfigure {
         this.localConfigureMap.put(feature, configure);
     }
 
+    // public List<EStructuralFeature> getLocalConcernedFeatures() {
+    //     return type.getEStructuralFeatures();
+    // }
+
     public Iterable<Entry<EStructuralFeature, FeatureConfigure>> getConcernedFeatures() {
         if(concernedFeatureList == null) {
             EList<EStructuralFeature> eAllStructuralFeatures = type.getEAllStructuralFeatures();

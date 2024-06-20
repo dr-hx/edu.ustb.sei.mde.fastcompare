@@ -9,7 +9,6 @@ import java.util.SortedMap;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
-import org.eclipse.emf.compare.CompareFactory;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.ecore.EObject;
@@ -178,7 +177,7 @@ public class ProximityIndex implements ObjectIndex {
 						Match cMatch = inProgress.getMatch(cand);
 						// we probably have to consider the containment position in the future
 						if (cMatch == null) {
-							partialMatch = CompareFactory.eINSTANCE.createMatch();
+							partialMatch = MatchUtil.createMatch();
 							MatchUtil.setMatch(partialMatch, eObj, passedObjectSide);
 							MatchUtil.setMatch(partialMatch, cand, sideToFind);
 							return partialMatch;

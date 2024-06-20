@@ -304,9 +304,11 @@ public class MatcherConfigure {
         return oneShotClassConfCache.get(clazz, this::_getClassConfigure);
     }
 
+    private FeatureFilter featureFilter = null;
     public FeatureFilter getFeatureFilter() {
-        FeatureFilter featureFilter;
-        featureFilter = new FeatureFilter(this);
+        if(featureFilter == null) {
+            featureFilter = new FeatureFilter(this);
+        }
         return featureFilter;
     }
 

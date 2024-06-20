@@ -11,9 +11,12 @@ import org.eclipse.emf.compare.Match;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.EcorePackage;
+
+import com.google.common.collect.Iterables;
 
 import edu.ustb.sei.mde.fastcompare.utils.AccessBasedLRUCache;
 import edu.ustb.sei.mde.fastcompare.utils.ReferenceUtil;
@@ -36,10 +39,11 @@ import edu.ustb.sei.mde.fastcompare.utils.ReferenceUtil;
  */
 public class FeatureFilter {
 
+	// HOTPOT
 	public List<Entry<EStructuralFeature, FeatureConfigure>> getFeaturesToCheck(final EClass clazz) {
 		List<Entry<EStructuralFeature, FeatureConfigure>> featuresToCheck = featuresToCheckCache.get(clazz);
 		if(featuresToCheck==null) {
-			featuresToCheck = new ArrayList<>();
+			featuresToCheck = new ArrayList<>(32);
 			ClassConfigure cc = configure.getClassConfigure(clazz);
 			Iterable<Entry<EStructuralFeature, FeatureConfigure>> features = cc.getConcernedFeatures();
 			for(Entry<EStructuralFeature, FeatureConfigure> pair : features) {
@@ -59,16 +63,16 @@ public class FeatureFilter {
 		return featuresToCheck;
 	}
 
-	public Iterator<Entry<EStructuralFeature, FeatureConfigure>> getFeaturesToCheckByInstance(final Match match) {
+	public Iterable<Entry<EStructuralFeature, FeatureConfigure>> getFeaturesToCheckByInstance(final Match match) {
 		final EClass clazz = getEClassFromMatch(match);
 		List<Entry<EStructuralFeature, FeatureConfigure>> list = getFeaturesToCheck(clazz);
 
-		return list.stream().filter(pair -> {
+		return Iterables.filter(list, pair -> {
 			if(pair.getKey() instanceof EReference) 
 				return !isIgnoredReferenceByMatch(match, (EReference) pair.getKey());
 			else 
 				return true;
-		}).iterator();
+		});
 	}
 
 	static public EClass getEClassFromMatch(final Match match) {
@@ -115,19 +119,22 @@ public class FeatureFilter {
 	 *         match.
 	 */
 	static protected boolean referenceIsSet(EReference reference, Match match) {
-		if (match.getLeft() != null && match.getLeft().eIsSet(reference)) {
+		final EObject left = match.getLeft();
+		if (left != null && left.eIsSet(reference)) {
 			return true;
 		}
 		boolean isSet = false;
 		final String featureName = reference.getName();
-		if (match.getRight() != null) {
-			final EStructuralFeature rightRef = match.getRight().eClass().getEStructuralFeature(featureName);
-			isSet = rightRef != null && match.getRight().eIsSet(rightRef);
+		final EObject right = match.getRight();
+		if (right != null) {
+			final EStructuralFeature rightRef = right.eClass().getEStructuralFeature(featureName);
+			isSet = rightRef != null && right.eIsSet(rightRef);
 		}
-		if (!isSet && match.getOrigin() != null) {
-			final EStructuralFeature originRef = match.getOrigin().eClass()
+		final EObject origin = match.getOrigin();
+		if (!isSet && origin != null) {
+			final EStructuralFeature originRef = origin.eClass()
 					.getEStructuralFeature(featureName);
-			isSet = originRef != null && match.getOrigin().eIsSet(originRef);
+			isSet = originRef != null && origin.eIsSet(originRef);
 		}
 		return isSet;
 	}

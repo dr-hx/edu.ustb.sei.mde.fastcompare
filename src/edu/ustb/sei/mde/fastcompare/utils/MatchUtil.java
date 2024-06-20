@@ -141,4 +141,8 @@ public class MatchUtil {
         final Match m = comp.getMatch(o);
         return m != null && MatchUtil.isMatched(m, side);
     }
+
+    static public Match createMatch() {
+        return new FastMatchSpec();
+    }
 }

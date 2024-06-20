@@ -129,11 +129,10 @@ public class DefaultDiffEngine implements IDiffEngine {
 	private void internalCheckForDifferences(Match match, FeatureFilter featureFilter) {
 		checkResourceAttachment(match);
 
-		final Iterator<Entry<EStructuralFeature, FeatureConfigure>> features = featureFilter.getFeaturesToCheckByInstance(match);
-		while(features.hasNext()) {
-			Entry<EStructuralFeature, FeatureConfigure> pair = features.next();
-			EStructuralFeature feature = pair.getKey();
-			
+		final Iterable<Entry<EStructuralFeature, FeatureConfigure>> features = featureFilter.getFeaturesToCheckByInstance(match);
+		//HOTPOT
+		features.forEach(pair->{
+			final EStructuralFeature feature = pair.getKey();
 			if(feature instanceof EReference) {
 				final EReference reference = (EReference) feature;
 				final boolean considerOrdering = featureFilter.checkForOrderingChanges(reference);
@@ -143,7 +142,9 @@ public class DefaultDiffEngine implements IDiffEngine {
 				final boolean considerOrdering = featureFilter.checkForOrderingChanges(attribute);
 				computeDifferences(match, attribute, pair.getValue(), considerOrdering);
 			}
-		}
+		});
+		// for(Entry<EStructuralFeature, FeatureConfigure> pair : features) {
+		// }
 
 		for (Match submatch : match.getSubmatches()) {
 			internalCheckForDifferences(submatch, featureFilter);

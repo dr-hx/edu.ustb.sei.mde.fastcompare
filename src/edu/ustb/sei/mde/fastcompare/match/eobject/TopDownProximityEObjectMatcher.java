@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import org.eclipse.emf.compare.CompareFactory;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.ecore.EObject;
@@ -354,7 +353,7 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
 			// we probably have to consider the containment position in the future
 			if (cMatch == null) {
 				if(partialMatch == null) {
-					partialMatch = CompareFactory.eINSTANCE.createMatch();
+					partialMatch = MatchUtil.createMatch();
 					MatchUtil.setMatch(partialMatch, eObj, passedObjectSide);
 				}
 				MatchUtil.setMatch(partialMatch, found, sideToFind);

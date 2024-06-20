@@ -17,6 +17,7 @@ import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.config.MutableFeatureConfigure;
 import edu.ustb.sei.mde.fastcompare.ihash.ElementIHasher;
 import edu.ustb.sei.mde.fastcompare.match.eobject.EditionDistance;
+import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
 
 public class TestConfigures {
 
@@ -57,7 +58,7 @@ public class TestConfigures {
 
 
         Comparison comparison = CompareFactory.eINSTANCE.createComparison();
-        Match conMatch = CompareFactory.eINSTANCE.createMatch();
+        Match conMatch = MatchUtil.createMatch();
         conMatch.setLeft(EcorePackage.eINSTANCE);
         comparison.getMatches().add(conMatch);
 

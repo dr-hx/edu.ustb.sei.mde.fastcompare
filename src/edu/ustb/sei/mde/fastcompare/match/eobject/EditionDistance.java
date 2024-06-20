@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.emf.compare.CompareFactory;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.DifferenceKind;
 import org.eclipse.emf.compare.DifferenceSource;
@@ -37,6 +36,7 @@ import edu.ustb.sei.mde.fastcompare.match.URIDistance;
 import edu.ustb.sei.mde.fastcompare.utils.AccessBasedLRUCache;
 
 import edu.ustb.sei.mde.fastcompare.utils.DiffUtil;
+import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
 import edu.ustb.sei.mde.fastcompare.utils.ProfileCounter;
 import edu.ustb.sei.mde.fastcompare.utils.ReferenceUtil;
 import edu.ustb.sei.mde.fastcompare.utils.URIComputer;
@@ -316,31 +316,31 @@ public class EditionDistance implements DistanceFunction {
             return (CountingDiffProcessor) getDiffProcessor();
         }
 
-        protected FeatureFilter createFeatureFilter() {
-            return new FeatureFilter(matcherConfigure) {
-                @Override
-                public List<Entry<EStructuralFeature, FeatureConfigure>> getFeaturesToCheck(EClass clazz) {
-                    List<Entry<EStructuralFeature, FeatureConfigure>> curList = this.featuresToCheckCache.get(clazz);
-                    if (curList == null) {
-                        curList = super.getFeaturesToCheck(clazz);
-                        int offset = 0;
-                        int size = curList.size();
-                        for (int i = 0; i < size; i++) {
-                            Entry<EStructuralFeature, FeatureConfigure> pair = curList.get(i);
-                            if (pair.getValue().getWeight() == 0) {
-                                offset++;
-                            } else {
-                                curList.set(i - offset, pair);
-                            }
-                        }
-                        for (int i = 1; i <= offset; i++) {
-                            curList.remove(size - i);
-                        }
-                    }
-                    return super.getFeaturesToCheck(clazz);
-                }
-            };
-        }
+        // protected FeatureFilter createFeatureFilter() {
+        //     return new FeatureFilter(matcherConfigure) {
+        //         @Override
+        //         public List<Entry<EStructuralFeature, FeatureConfigure>> getFeaturesToCheck(EClass clazz) {
+        //             List<Entry<EStructuralFeature, FeatureConfigure>> curList = this.featuresToCheckCache.get(clazz);
+        //             if (curList == null) {
+        //                 curList = super.getFeaturesToCheck(clazz);
+        //                 int offset = 0;
+        //                 int size = curList.size();
+        //                 for (int i = 0; i < size; i++) {
+        //                     Entry<EStructuralFeature, FeatureConfigure> pair = curList.get(i);
+        //                     if (pair.getValue().getWeight() == 0) {
+        //                         offset++;
+        //                     } else {
+        //                         curList.set(i - offset, pair);
+        //                     }
+        //                 }
+        //                 for (int i = 1; i <= offset; i++) {
+        //                     curList.remove(size - i);
+        //                 }
+        //             }
+        //             return super.getFeaturesToCheck(clazz);
+        //         }
+        //     };
+        // }
 
         /**
          * Create a mock {@link Match} between the two given EObjects so that we can use
@@ -429,7 +429,7 @@ public class EditionDistance implements DistanceFunction {
 			}
 		};
 
-		Match fakeMatch = CompareFactory.eINSTANCE.createMatch();
+		Match fakeMatch = MatchUtil.createMatch();
 		((InternalEList<Match>) fakeComparison.getMatches()).addUnique(fakeMatch);
 
 		IEqualityHelper equalityHelper = new EqualityHelper(null, matcherConfigure) { // cache is of no use now

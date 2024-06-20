@@ -11,7 +11,6 @@ import java.util.function.Function;
 import org.eclipse.emf.common.util.BasicDiagnostic;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.compare.CompareFactory;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.ecore.EObject;
@@ -29,6 +28,7 @@ import com.google.common.collect.Sets;
 import org.eclipse.emf.ecore.util.InternalEList;
 
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex;
+import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
 import edu.ustb.sei.mde.fastcompare.utils.TreesIterator;
 
 import static edu.ustb.sei.mde.fastcompare.ModelCompare.*;
@@ -137,7 +137,7 @@ public class IdentifierEObjectMatcher implements IEObjectMatcher {
 					// if (monitor.isCanceled()) {
 					// 	throw new ComparisonCanceledException();
 					// }
-					Match match = CompareFactory.eINSTANCE.createMatch();
+					Match match = MatchUtil.createMatch();
 					match.setLeft(eObject);
 					matches.add(match);
 				}
@@ -145,7 +145,7 @@ public class IdentifierEObjectMatcher implements IEObjectMatcher {
 					// if (monitor.isCanceled()) {
 					// 	throw new ComparisonCanceledException();
 					// }
-					Match match = CompareFactory.eINSTANCE.createMatch();
+					Match match = MatchUtil.createMatch();
 					match.setRight(eObject);
 					matches.add(match);
 				}
@@ -153,7 +153,7 @@ public class IdentifierEObjectMatcher implements IEObjectMatcher {
 					// if (monitor.isCanceled()) {
 					// 	throw new ComparisonCanceledException();
 					// }
-					Match match = CompareFactory.eINSTANCE.createMatch();
+					Match match = MatchUtil.createMatch();
 					match.setOrigin(eObject);
 					matches.add(match);
 				}
@@ -500,7 +500,7 @@ public class IdentifierEObjectMatcher implements IEObjectMatcher {
 				final EObject left = leftEObjects.next();
 				final String identifier = idComputation.apply(left);
 				if (identifier != null) {
-					final Match match = CompareFactory.eINSTANCE.createMatch();
+					final Match match = MatchUtil.createMatch();
 					match.setLeft(left);
 					// Can we find a parent? Assume we're iterating in containment order
 					final EObject parentEObject = getParentEObject(left);
@@ -539,7 +539,7 @@ public class IdentifierEObjectMatcher implements IEObjectMatcher {
 						rightEObjectsToMatch.put(right, match);
 					} else {
 						// Otherwise, create and place it.
-						match = CompareFactory.eINSTANCE.createMatch();
+						match = MatchUtil.createMatch();
 						match.setRight(right);
 						// Can we find a parent?
 						final EObject parentEObject = getParentEObject(right);
@@ -576,7 +576,7 @@ public class IdentifierEObjectMatcher implements IEObjectMatcher {
 						originEObjectsToMatch.put(origin, match);
 					} else {
 						// Otherwise, create and place it.
-						match = CompareFactory.eINSTANCE.createMatch();
+						match = MatchUtil.createMatch();
 						match.setOrigin(origin);
 						// Can we find a parent?
 						final EObject parentEObject = getParentEObject(origin);

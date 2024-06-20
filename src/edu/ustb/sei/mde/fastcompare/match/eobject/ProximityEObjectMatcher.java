@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.common.util.BasicEList;
-import org.eclipse.emf.compare.CompareFactory;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.ecore.EObject;
@@ -531,25 +530,25 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 				boolean loEqType = lc.eClass() == oc.eClass();
 
 				if(lrEqType && loEqType) {
-					Match childMatch = CompareFactory.eINSTANCE.createMatch();
+					Match childMatch = MatchUtil.createMatch();
 					childMatch.setLeft(lc);
 					childMatch.setRight(rc);
 					childMatch.setOrigin(oc);
 					createNewSubtreeMatches(comparison, childMatch, roots);
 				} else if(lrEqType) {
-					Match childMatch = CompareFactory.eINSTANCE.createMatch();
+					Match childMatch = MatchUtil.createMatch();
 					childMatch.setLeft(lc);
 					childMatch.setRight(rc);
 					childMatch.setOrigin(MatchUtil.PSEUDO_MATCHED_OBJECT);
 					createNewSubtreeMatches(comparison, childMatch, roots);
 				} else if(loEqType) {
-					Match childMatch = CompareFactory.eINSTANCE.createMatch();
+					Match childMatch = MatchUtil.createMatch();
 					childMatch.setLeft(lc);
 					childMatch.setRight(MatchUtil.PSEUDO_MATCHED_OBJECT);
 					childMatch.setOrigin(oc);
 					createNewSubtreeMatches(comparison, childMatch, roots);
 				} else if(rc.eClass() == oc.eClass()) {
-					Match childMatch = CompareFactory.eINSTANCE.createMatch();
+					Match childMatch = MatchUtil.createMatch();
 					childMatch.setLeft(MatchUtil.PSEUDO_MATCHED_OBJECT);
 					childMatch.setRight(rc);
 					childMatch.setOrigin(oc);
@@ -562,7 +561,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 				EObject lc = lefts.get(i);
 				EObject rc = rights.get(i);
 				if(lc.eClass() == rc.eClass()) {
-					Match childMatch = CompareFactory.eINSTANCE.createMatch();
+					Match childMatch = MatchUtil.createMatch();
 					childMatch.setLeft(lc);
 					childMatch.setRight(rc);
 					childMatch.setOrigin(MatchUtil.PSEUDO_MATCHED_OBJECT);
@@ -575,7 +574,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 				EObject lc = lefts.get(i);
 				EObject oc = origins.get(i);
 				if(lc.eClass() == oc.eClass()) {
-					Match childMatch = CompareFactory.eINSTANCE.createMatch();
+					Match childMatch = MatchUtil.createMatch();
 					childMatch.setLeft(lc);
 					childMatch.setRight(MatchUtil.PSEUDO_MATCHED_OBJECT);
 					childMatch.setOrigin(oc);
@@ -588,7 +587,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 				EObject rc = rights.get(i);
 				EObject oc = origins.get(i);
 				if(rc.eClass() == oc.eClass()) {
-					Match childMatch = CompareFactory.eINSTANCE.createMatch();
+					Match childMatch = MatchUtil.createMatch();
 					childMatch.setLeft(MatchUtil.PSEUDO_MATCHED_OBJECT);
 					childMatch.setRight(rc);
 					childMatch.setOrigin(oc);
@@ -672,7 +671,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	private Match areMatching(Comparison comparison, EObject left, EObject right, EObject origin, Match partialMatch) {
 		Match result;
 		if(partialMatch == null) {
-			result = CompareFactory.eINSTANCE.createMatch();
+			result = MatchUtil.createMatch();
 			result.setLeft(left);
 			result.setRight(right);
 			result.setOrigin(origin);

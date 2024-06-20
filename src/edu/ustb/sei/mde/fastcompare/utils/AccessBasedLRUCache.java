@@ -22,6 +22,7 @@ public class AccessBasedLRUCache<K, V> extends LinkedHashMap<K, V> {
 	 * The maximum size of the cache before it starts evicting elements.
 	 */
 	private int maxSize;
+	
 
 	/**
 	 * Create a new cache.
@@ -38,11 +39,21 @@ public class AccessBasedLRUCache<K, V> extends LinkedHashMap<K, V> {
 		this.maxSize = maxSize;
 	}
 
+	// private boolean flag = false;
+	// public AccessBasedLRUCache(int maxSize, int initialCapacity, float loadFactor, boolean dump) {
+	// 	super(initialCapacity, loadFactor, true);
+	// 	this.maxSize = maxSize;
+	// 	this.flag = dump;
+	// }
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public boolean removeEldestEntry(Map.Entry<K, V> eldest) {
 		return size() > maxSize;
+		// if(flag && ret) {
+		// 	System.out.println("Remove oldest");
+		// }
+		// return ret;
 	}
 }
