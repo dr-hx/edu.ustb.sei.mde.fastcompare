@@ -3,8 +3,15 @@ package edu.ustb.sei.mde.fastcompare.match.eobject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import javax.management.RuntimeErrorException;
+import javax.swing.GroupLayout.Group;
+
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.ecore.EObject;
@@ -46,30 +53,28 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
             nextLevel.clear();
             notFullyMatched.clear();
     
-			// coarse match
-            for(EObject eObj : todoList) {
-                ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(eObj);
-                if(adapter == null) continue;
+			if(configure.isUsingSubtreeHash()) {
+				// coarse match
+				for(EObject eObj : todoList) {
+					ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(eObj);
+					if(adapter == null) continue;
+	
+					Match partialMatch = comparison.getMatch(eObj);
+					if (!MatchUtil.isFullMatch(partialMatch)) {
+						partialMatch = trySubtreeMatch(comparison, eObj, partialMatch, createUnmatches, roots);
+						if(!MatchUtil.isFullMatch(partialMatch)) {
+							notFullyMatched.add(eObj);
+						}
+					}
+				}
 
-                Match partialMatch = comparison.getMatch(eObj);
-                if (!MatchUtil.isFullMatch(partialMatch)) {
-                    partialMatch = trySubtreeMatch(comparison, eObj, partialMatch, createUnmatches, roots);
-                    if(!MatchUtil.isFullMatch(partialMatch)) {
-                        notFullyMatched.add(eObj);
-                    }
-                }
-            }
-
-			// structural iso match
-			Iterator<EObject> notMatched = notFullyMatched.iterator();
-			while(notMatched.hasNext()) {
-				EObject eObj = notMatched.next();
-                Match partialMatch = comparison.getMatch(eObj);
-                partialMatch = trySubtreeStructuralMatch(comparison, eObj, partialMatch, createUnmatches, roots);
-                if(MatchUtil.isFullMatch(partialMatch)) {
-                    notMatched.remove();
-                }
-            }
+				// structural iso match
+				// FIXME: to avoid wrong matches, we should sort the Cartesian product of notMatched and their candidates
+				//  by using content and position
+				makeSubtreeStructuralMatches(comparison, createUnmatches, roots, notFullyMatched);
+			} else {
+				notFullyMatched.addAll(nextLevel);
+			}
     
 			// fine match
             for(EObject eObj : notFullyMatched) {
@@ -84,6 +89,20 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
         
         return Collections.emptyList();
     }
+
+	protected void makeSubtreeStructuralMatches(Comparison comparison, boolean createUnmatches,
+			Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots,
+			List<EObject> notFullyMatched) {
+		Iterator<EObject> notMatched = notFullyMatched.iterator();
+		while(notMatched.hasNext()) {
+			EObject eObj = notMatched.next();
+			Match partialMatch = comparison.getMatch(eObj);
+			partialMatch = trySubtreeStructuralMatch(comparison, eObj, partialMatch, createUnmatches, roots);
+			if(MatchUtil.isFullMatch(partialMatch)) {
+				notMatched.remove();
+			}
+		}
+	}
 
     private Match trySubtreeMatch(Comparison comparison, EObject a, Match partialMatchOfA, boolean createUnmatches, 
 		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
@@ -122,7 +141,7 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
 		// if bSubtree != null && cSubtree == null, then Match.a = aSubtree, Match.b = bSubtree, Match.c = PSEUDO
 		// if bSubtree == null && cSubtree != null, then Match.a = aSubtree, Match.b = PSEUDO, Match.c = cSubtree
 		// if bSubtree != null && cSubtree != null, then Match.a = aSubtree, Match.b = bSubtree, Match.c = cSubtree, remove all from index
-		if(configure.isUsingSubtreeHash()) {
+		// if(configure.isUsingSubtreeHash()) {
 			// when partialMatchOfA != null, we should match objects with partial matches
 			// otherwise, we can match objects with partial matches
 			// if findIdenticalSubtrees returns a match
@@ -131,49 +150,51 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
 			//    if partialMatchOfA == null && result != partialMatchOfA, it is a new match or a partial match from other sides
 			//      for a new match, createNewMatch
 			//      otherwise, fill from the side of result (either bSide or cSide)
-			boolean unmatchedB = !MatchUtil.isMatched(partialMatchOfA, bSide);
-			
-			Match result = index.findIdenticalSubtrees(comparison, a, aSide, partialMatchOfA, roots);
-            
-            if(partialMatchOfA == null) {
-				if(result == null) {
-					// no subtree match is found
-					return null;
-				} else {
-					if(result.eContainer() == null) {
-						// this is a new match
-						total ++;
-						createNewSubtreeMatches(comparison, result, roots);
-					} else {
-						// this is a match from other sides
-						// fill a
-						// fillSubtreeMatch(result, aSide)
-						fillSubtreeMatches(comparison, result, aSide, roots);
-					}
-					return result;
-				}
-			} else {
-				// in this case, result will not be null
-				// we must check if the partial match is changed
-				// if changed, fill b or c
-				// fillSubtreeMatch(result, bSide) or fillSubtreeMatch(result, cSide)
-				assert result != null;
-				ObjectIndex.Side sideToFill = null;
-				if(unmatchedB) {
-					if(MatchUtil.isMatched(result, bSide)) sideToFill = bSide;
-				} else {
-					if(MatchUtil.isMatched(result, cSide)) sideToFill = cSide;
-				}
+		boolean unmatchedB = !MatchUtil.isMatched(partialMatchOfA, bSide);
 
-				if(sideToFill != null) {
-					assert MatchUtil.isFullMatch(result);
-					fillSubtreeMatches(comparison, result, sideToFill, roots);
-					return result;
-				} else 
-					return result;
+		Match result = index.findIdenticalSubtrees(comparison, a, aSide, partialMatchOfA, roots);
+
+		if (partialMatchOfA == null) {
+			if (result == null) {
+				// no subtree match is found
+				return null;
+			} else {
+				if (result.eContainer() == null) {
+					// this is a new match
+					total++;
+					createNewSubtreeMatches(comparison, result, roots);
+				} else {
+					// this is a match from other sides
+					// fill a
+					// fillSubtreeMatch(result, aSide)
+					fillSubtreeMatches(comparison, result, aSide, roots);
+				}
+				return result;
 			}
-		} else return partialMatchOfA;
-	}
+		} else {
+			// in this case, result will not be null
+			// we must check if the partial match is changed
+			// if changed, fill b or c
+			// fillSubtreeMatch(result, bSide) or fillSubtreeMatch(result, cSide)
+			assert result != null;
+			ObjectIndex.Side sideToFill = null;
+			if (unmatchedB) {
+				if (MatchUtil.isMatched(result, bSide))
+					sideToFill = bSide;
+			} else {
+				if (MatchUtil.isMatched(result, cSide))
+					sideToFill = cSide;
+			}
+
+			if (sideToFill != null) {
+				assert MatchUtil.isFullMatch(result);
+				fillSubtreeMatches(comparison, result, sideToFill, roots);
+				return result;
+			} else
+				return result;
+		}
+		// } else return partialMatchOfA;
+	}	
 
 	private Match trySubtreeStructuralMatch(Comparison comparison, EObject a, Match partialMatchOfA, boolean createUnmatches, 
 		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
@@ -204,59 +225,61 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
 		return partialMatchOfA;
     }
 
-	protected Match coarseGainedStructuralMatch(Comparison comparison, Match partialMatchOfA, EObject a, Side aSide, Side bSide, Side cSide, 
+	private Match coarseGainedStructuralMatch(Comparison comparison, Match partialMatchOfA, EObject a, Side aSide, Side bSide, Side cSide, 
 		Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
 		// find subtrees in bSide and cSide
 		// if bSubtree == null && cSubtree == null, then do nothing
 		// if bSubtree != null && cSubtree == null, then Match.a = aSubtree, Match.b = bSubtree, Match.c = PSEUDO
 		// if bSubtree == null && cSubtree != null, then Match.a = aSubtree, Match.b = PSEUDO, Match.c = cSubtree
 		// if bSubtree != null && cSubtree != null, then Match.a = aSubtree, Match.b = bSubtree, Match.c = cSubtree, remove all from index
-		if(configure.isUsingSubtreeHash()) {
-			boolean unmatchedB = !MatchUtil.isMatched(partialMatchOfA, bSide);
-			
-			Match result = findUniqueStructureIdenticalSubtrees(comparison, a, aSide, partialMatchOfA, roots);
+		// if(configure.isUsingSubtreeHash()) {
+		boolean unmatchedB = !MatchUtil.isMatched(partialMatchOfA, bSide);
 
-			if(partialMatchOfA == null) {
-				if(result == null) {
-					// no subtree match is found
-					return null;
-				} else {
-					if(result.eContainer() == null) {
-						// this is a new match
-						total ++;
-						createNewSubtreeMatches(comparison, result, roots);
-					} else {
-						// this is a match from other sides
-						// fill a
-						// fillSubtreeMatch(result, aSide)
-						fillSubtreeMatches(comparison, result, aSide, roots);
-					}
-					return result;
-				}
+		Match result = findUniqueStructureIdenticalSubtrees(comparison, a, aSide, partialMatchOfA, roots);
+
+		if (partialMatchOfA == null) {
+			if (result == null) {
+				// no subtree match is found
+				return null;
 			} else {
-				// in this case, result will not be null
-				// we must check if the partial match is changed
-				// if changed, fill b or c
-				// fillSubtreeMatch(result, bSide) or fillSubtreeMatch(result, cSide)
-				assert result != null;
-				ObjectIndex.Side sideToFill = null;
-				if(unmatchedB) {
-					if(MatchUtil.isMatched(result, bSide)) sideToFill = bSide;
+				if (result.eContainer() == null) {
+					// this is a new match
+					total++;
+					createNewSubtreeMatches(comparison, result, roots);
 				} else {
-					if(MatchUtil.isMatched(result, cSide)) sideToFill = cSide;
+					// this is a match from other sides
+					// fill a
+					// fillSubtreeMatch(result, aSide)
+					fillSubtreeMatches(comparison, result, aSide, roots);
 				}
-
-				if(sideToFill != null) {
-					assert MatchUtil.isFullMatch(result);
-					fillSubtreeMatches(comparison, result, sideToFill, roots);
-					return result;
-				} else 
-					return result;
+				return result;
 			}
-		} else return partialMatchOfA;
+		} else {
+			// in this case, result will not be null
+			// we must check if the partial match is changed
+			// if changed, fill b or c
+			// fillSubtreeMatch(result, bSide) or fillSubtreeMatch(result, cSide)
+			assert result != null;
+			ObjectIndex.Side sideToFill = null;
+			if (unmatchedB) {
+				if (MatchUtil.isMatched(result, bSide))
+					sideToFill = bSide;
+			} else {
+				if (MatchUtil.isMatched(result, cSide))
+					sideToFill = cSide;
+			}
+
+			if (sideToFill != null) {
+				assert MatchUtil.isFullMatch(result);
+				fillSubtreeMatches(comparison, result, sideToFill, roots);
+				return result;
+			} else
+				return result;
+		}
+		// } else return partialMatchOfA;
 	}
 
-    private boolean readyForThisTest(Comparison inProgress, EObject fastCheck) {
+    protected boolean readyForThisTest(Comparison inProgress, EObject fastCheck) {
 		EObject eContainer = fastCheck.eContainer();
 		if (eContainer != null && isInScope(eContainer)) {
 			Match match = MatchUtil.getMatch(eContainer, inProgress);
@@ -341,7 +364,7 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
 							found = cand;
 							bestSim = sim;
 						} else {
-							return partialMatch;
+							return partialMatch; // no unique match
 						}
 					}
 				}
