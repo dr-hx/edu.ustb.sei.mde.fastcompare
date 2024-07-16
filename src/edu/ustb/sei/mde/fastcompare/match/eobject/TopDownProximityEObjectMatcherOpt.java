@@ -36,7 +36,7 @@ public class TopDownProximityEObjectMatcherOpt extends TopDownProximityEObjectMa
 		while(notMatched.hasNext()) {
 			EObject eObj = notMatched.next();
 			ChangeTrackingMatch partialMatchPair = results.get(eObj);
-			if(MatchUtil.isFullMatch(partialMatchPair.match)) {
+			if(partialMatchPair != null && MatchUtil.isFullMatch(partialMatchPair.match)) {
 				notMatched.remove();
 			}
 		}
@@ -240,7 +240,7 @@ public class TopDownProximityEObjectMatcherOpt extends TopDownProximityEObjectMa
 			final EObject curPar = cur.eContainer();
 
 			final ChangeTrackingMatch matchOfCurPair = currentMatches.get(cur);
-			final Match matchOfCur = matchOfCurPair.match;
+			final Match matchOfCur = matchOfCurPair == null ? null : matchOfCurPair.match;
 
 			if (readyForThisTest(comparison, cur) == false)
 				continue;
@@ -287,32 +287,87 @@ public class TopDownProximityEObjectMatcherOpt extends TopDownProximityEObjectMa
 		});
 	}
 
+	private boolean hasMatchFor(ChangeTrackingMatch ctm, Side sideToCheck) {
+		if(ctm == null) return false;
+		else return MatchUtil.isMatched(ctm.match, sideToCheck);
+	}
+
 	private void pickMatches(Comparison comparison, Side passedObjectSide, Side bSide, Side cSide, 
 			Map<EObject, ChangeTrackingMatch> currentMatches, List<CandidateMatch> candidateMatches) {
 		Collections.sort(candidateMatches);
-		// 1. get match m of from, or create one
-		// 2. if m.bSide = empty, then fill bCand
-		candidateMatches.forEach(cm -> {
-			Match cMatch = comparison.getMatch(cm.cand);
 
-			if(cMatch == null) {
-				ChangeTrackingMatch partialMatch = currentMatches.get(cm.from);
-				if(partialMatch == null) {
+		candidateMatches.forEach(cm -> {
+			//FIXME
+			// we establish a new mapping iff. cm.from does not have a bSide match and cm.cand does not have a aSide match
+			// cm.cand is selected as a candidate because it does hot have a aSide match initially
+
+			// currentMatches contains all the matches of aSide objects, but the matches of bSide objects are not actively indexed
+			// if currentMatches contains a match of cm.cand, then this match must be one stored in this method
+			// hence, before we establish/store a match for cm.cand, we should check if comparison has a match of cm.cand
+			ChangeTrackingMatch aMatch = currentMatches.get(cm.from);
+			ChangeTrackingMatch bMatch = currentMatches.get(cm.cand);
+
+			if(hasMatchFor(aMatch, bSide) || hasMatchFor(bMatch, passedObjectSide)) return;
+			
+			if(aMatch == null && bMatch == null) {
+				// check if cm.cand has a match in comparison. 
+				// if so, reuse the match
+				Match oldBMatch = comparison.getMatch(cm.cand);
+				ChangeTrackingMatch ctm;
+				if(oldBMatch == null) {
 					Match newMatch = MatchUtil.createMatch();
 					MatchUtil.setMatch(newMatch, cm.from, passedObjectSide);
 					MatchUtil.setMatch(newMatch, cm.cand, bSide);
-					currentMatches.put(cm.from, new ChangeTrackingMatch(newMatch, passedObjectSide));
+					ctm = new ChangeTrackingMatch(newMatch, passedObjectSide);
 				} else {
-					MatchUtil.setMatch(partialMatch.match, cm.cand, bSide);
-					if(partialMatch.changedSide != null) throw new RuntimeException();
-					partialMatch.changedSide = bSide;
+					MatchUtil.setMatch(oldBMatch, cm.from, passedObjectSide);
+					ctm = new ChangeTrackingMatch(oldBMatch, passedObjectSide);
 				}
+				currentMatches.put(cm.from, ctm);
+				currentMatches.put(cm.cand, ctm);
+			} else if(bMatch == null) {// aMatch != null
+				Match oldBMatch = comparison.getMatch(cm.cand);
+				if(oldBMatch != null) {
+					return; // skip now, but we may further try to merge the two matches
+				}
+
+				if(aMatch.changedSide != null) {
+					if(aMatch.changedSide != passedObjectSide) 
+					throw new RuntimeException();
+				}
+				aMatch.changedSide = bSide;
+				MatchUtil.setMatch(aMatch.match, cm.cand, bSide);
+				currentMatches.put(cm.cand, aMatch);
+			} else if(aMatch == null) { // bMatch != null
+				MatchUtil.setMatch(bMatch.match, cm.from, passedObjectSide);
+				bMatch.changedSide = passedObjectSide;
+				currentMatches.put(cm.from, bMatch);
 			} else {
-				// tryFillMatched will skip matches that have been matched
-				MatchUtil.tryFillMatched(cMatch, cm.from, passedObjectSide);
-				if(cMatch.eContainer() != null) throw new RuntimeException();
-				currentMatches.put(cm.from, new ChangeTrackingMatch(cMatch, passedObjectSide));
+				throw new RuntimeException();
 			}
+
+
+			// Match cMatch = comparison.getMatch(cm.cand);
+
+			// if(cMatch == null) {
+			// 	ChangeTrackingMatch partialMatch = currentMatches.get(cm.from);
+			// 	if(partialMatch == null) {
+			// 		Match newMatch = MatchUtil.createMatch();
+			// 		MatchUtil.setMatch(newMatch, cm.from, passedObjectSide);
+			// 		MatchUtil.setMatch(newMatch, cm.cand, bSide);
+			// 		currentMatches.put(cm.from, new ChangeTrackingMatch(newMatch, passedObjectSide));
+			// 	} else {
+			// 		MatchUtil.setMatch(partialMatch.match, cm.cand, bSide);
+			// 		if(partialMatch.changedSide != null && partialMatch.changedSide != passedObjectSide) 
+			// 			throw new RuntimeException();
+			// 		partialMatch.changedSide = bSide;
+			// 	}
+			// } else {
+			// 	// tryFillMatched will skip matches that have been matched
+			// 	MatchUtil.tryFillMatched(cMatch, cm.from, passedObjectSide);
+			// 	if(cMatch.eContainer() != null) throw new RuntimeException();
+			// 	currentMatches.put(cm.from, new ChangeTrackingMatch(cMatch, passedObjectSide));
+			// }
 		});
 	}
 }
