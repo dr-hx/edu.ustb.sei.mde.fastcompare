@@ -11,7 +11,7 @@ import edu.ustb.sei.mde.fastcompare.config.AdaptiveWeightTable;
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapter;
 import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapterFactory;
-import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapterWithStructuralChecksum;
+import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapterEx;
 import edu.ustb.sei.mde.fastcompare.match.DefaultComparisonFactory;
 import edu.ustb.sei.mde.fastcompare.match.DefaultMatchEngine;
 import edu.ustb.sei.mde.fastcompare.match.IMatchEngine;
@@ -52,7 +52,7 @@ public class CompareUtil {
         config.setIndexAdapterFactory(new ElementIndexAdapterFactory() {
             @Override
             protected ElementIndexAdapter createAdapter(int id) {
-                return new ElementIndexAdapterWithStructuralChecksum(id);
+                return new ElementIndexAdapterEx(id);
             }
         });
         IEObjectMatcher matcher = new TopDownProximityEObjectMatcherOpt(config);

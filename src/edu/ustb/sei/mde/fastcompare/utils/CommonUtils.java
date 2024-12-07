@@ -116,6 +116,10 @@ public class CommonUtils {
         };
     }
 
+    static public void update(Checksum checksum, boolean value) {
+    	if(value) checksum.update("true".getBytes());
+        else  checksum.update("false".getBytes());
+    }
 
     static public void update(Checksum checksum, long value) {
         int l = (int) (value & 0xFFFFFFFFL);

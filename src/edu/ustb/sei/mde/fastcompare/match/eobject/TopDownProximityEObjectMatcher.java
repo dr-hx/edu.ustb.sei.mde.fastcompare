@@ -11,8 +11,9 @@ import org.eclipse.emf.ecore.EObject;
 
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapter;
-import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapterWithStructuralChecksum;
+import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapterEx;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex;
+import edu.ustb.sei.mde.fastcompare.index.TreeHashValueEx;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex.Side;
 import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
 import edu.ustb.sei.mde.fastcompare.utils.Triple;
@@ -50,15 +51,17 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
 				// coarse match
 				for(EObject eObj : todoList) {
 					ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(eObj);
-					if(adapter == null) continue;
-	
-					Match partialMatch = comparison.getMatch(eObj);
-					if (!MatchUtil.isFullMatch(partialMatch)) {
-						partialMatch = trySubtreeMatch(comparison, eObj, partialMatch, createUnmatches, roots);
-						if(!MatchUtil.isFullMatch(partialMatch)) {
-							notFullyMatched.add(eObj);
+					if(adapter != null) {
+						Match partialMatch = comparison.getMatch(eObj);
+						if (!MatchUtil.isFullMatch(partialMatch)) {
+							partialMatch = trySubtreeMatch(comparison, eObj, partialMatch, createUnmatches, roots);
+							if(!MatchUtil.isFullMatch(partialMatch)) {
+								notFullyMatched.add(eObj);
+							}
 						}
 					}
+	
+					nextLevel.addAll(eObj.eContents());
 				}
 
 				// structural iso match
@@ -73,7 +76,6 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
             for(EObject eObj : notFullyMatched) {
                 Match partialMatch = comparison.getMatch(eObj);
                 tryFineMatch(comparison, eObj, partialMatch, createUnmatches);
-                nextLevel.addAll(eObj.eContents());
             }
     
             if(nextLevel.isEmpty()) break;
@@ -316,7 +318,7 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
 
     private Match findUniqueStructureIdenticalSubtree(Comparison inProgress, EObject eObj, Side passedObjectSide, Side sideToFind, Match partialMatch,
 			Iterable<EObject> candidates) {
-		ElementIndexAdapterWithStructuralChecksum adapter = ElementIndexAdapter.getAdapter(eObj);
+		ElementIndexAdapterEx adapter = ElementIndexAdapter.getAdapter(eObj);
 		if(adapter == null) return null;
 
         final EObject eContainer = eObj.eContainer();
@@ -335,24 +337,25 @@ public class TopDownProximityEObjectMatcher extends ProximityEObjectMatcher {
 			candidates = matchedContainer.eContents();
 		}
 
-		final long subtreeKey = adapter.getTreeStructuralChecksum();
+		final TreeHashValueEx hash = (TreeHashValueEx) adapter.getTreeHash();
 		
-        final int size = adapter.size;
-        final int height = adapter.height;
-        if(size < 2 && height < 2) return partialMatch;
+        final int size = hash.size;
+        final int height = hash.height;
+        
+		if(size < 2 && height < 2) return partialMatch;
 
 		EObject found = null;
 		double bestSim = 0;
 
 		for (EObject cand : candidates) {
 			if(cand.eClass() != eObj.eClass()) continue;
-			ElementIndexAdapterWithStructuralChecksum cAdapter = ElementIndexAdapter.getAdapter(cand);
+			ElementIndexAdapterEx cAdapter = ElementIndexAdapter.getAdapter(cand);
 			if(cAdapter != null) {
 				if(MatchUtil.hasMatchFor(cand, inProgress, passedObjectSide)) continue;
-				final long ctreeKey = cAdapter.getTreeStructuralChecksum();
-				if (size == cAdapter.size && height == cAdapter.height && ctreeKey == subtreeKey) {
-					final double sim = adapter.treeSimHash.similarity(cAdapter.treeSimHash);
-					if(sim > 0.85) {
+				final TreeHashValueEx cHash = (TreeHashValueEx) cAdapter.getTreeHash();
+				if (hash.isSubtreeStructuralIdentical(cHash)) {
+					final double sim = hash.computeSubtreeSimilarity(cHash);
+					if(sim > 0.80) {
 						if(found == null || (sim > 0.96 && bestSim < 0.93)) {
 							found = cand;
 							bestSim = sim;

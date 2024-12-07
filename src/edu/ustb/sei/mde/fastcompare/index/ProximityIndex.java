@@ -166,14 +166,14 @@ public class ProximityIndex implements ObjectIndex {
 		ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(eObj);
 		if(adapter == null) return null;
 
-		final int height = adapter.height;
-		final long subtreeKey = adapter.getSubtreeIdentityHash();
-
+		final TreeHashValue hash = adapter.getTreeHash();
+		
 		if (partialMatch == null) {
 			for (EObject cand : candidates) {
 				ElementIndexAdapter cAdapter = ElementIndexAdapter.getAdapter(cand);
 				if(cAdapter != null) {
-					if (height == cAdapter.height && cAdapter.getSubtreeIdentityHash() == subtreeKey) {
+					final TreeHashValue cHash = cAdapter.getTreeHash();
+					if (hash.isSubtreeIdentical(cHash)) {
 						Match cMatch = inProgress.getMatch(cand);
 						// we probably have to consider the containment position in the future
 						if (cMatch == null) {
@@ -191,7 +191,8 @@ public class ProximityIndex implements ObjectIndex {
 			for (EObject cand : candidates) {
 				ElementIndexAdapter cAdapter = ElementIndexAdapter.getAdapter(cand);
 				if(cAdapter != null) {
-					if (height == cAdapter.height && cAdapter.getSubtreeIdentityHash() == subtreeKey) {
+					final TreeHashValue cHash = cAdapter.getTreeHash();
+					if (hash.isSubtreeIdentical(cHash)) {
 						Match cMatch = inProgress.getMatch(cand);
 						if (cMatch == null) {
 							// if cand is not considered as matched, we can fill it to partial match

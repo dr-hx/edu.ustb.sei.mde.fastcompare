@@ -599,7 +599,7 @@ public class ProximityEObjectMatcher implements IEObjectMatcher, ScopeQuery {
 	}
 
 
-	private List<EObject> getChildren(EObject obj) {
+	protected List<EObject> getChildren(EObject obj) {
 		if(obj == null) return Collections.emptyList();
 		else return obj.eContents();
 	}

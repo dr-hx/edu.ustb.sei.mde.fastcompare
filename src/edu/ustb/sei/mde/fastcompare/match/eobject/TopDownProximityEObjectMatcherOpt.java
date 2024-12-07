@@ -8,14 +8,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Match;
 import org.eclipse.emf.ecore.EObject;
 
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
+
 import edu.ustb.sei.mde.fastcompare.config.MatcherConfigure;
 import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapter;
-import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapterWithStructuralChecksum;
+import edu.ustb.sei.mde.fastcompare.index.ElementIndexAdapterEx;
 import edu.ustb.sei.mde.fastcompare.index.ObjectIndex.Side;
+import edu.ustb.sei.mde.fastcompare.index.TreeHashValueEx;
 import edu.ustb.sei.mde.fastcompare.utils.MatchUtil;
 import edu.ustb.sei.mde.fastcompare.utils.Triple;
 
@@ -93,13 +98,16 @@ public class TopDownProximityEObjectMatcherOpt extends TopDownProximityEObjectMa
 	}
 
 	class CandidateMatchGroup {
+		private static final double TREE_SIM_THREASHOLD = 0.65;
 		List<CandidateMatch> bCandidates = new ArrayList<>();
 		List<CandidateMatch> cCandidates = new ArrayList<>();
 
 		private void add(EObject from, int iFrom, EObject cand, int iCand, List<CandidateMatch> candidates) {
 			double sim = computePartialSimilarity(from, cand);
-			if(sim==0.0) return;
-			if(sim>0.96) sim = 1.0;
+			if (sim == 0.0)
+				return;
+			if (sim > 0.96)
+				sim = 1.0;
 
 			CandidateMatch cm = new CandidateMatch();
 			cm.from = from;
@@ -116,6 +124,33 @@ public class TopDownProximityEObjectMatcherOpt extends TopDownProximityEObjectMa
 
 		public void addCandidateC(EObject a, int ia, EObject c, int ic) {
 			add(a, ia, c, ic, cCandidates);
+		}
+		
+		protected double computePartialSimilarity(EObject from, EObject cand) {
+			ElementIndexAdapterEx adapter = (ElementIndexAdapterEx) ElementIndexAdapter.getAdapter(from);
+			if (adapter == null) return 0.0;
+			if (cand.eClass() != from.eClass()) return 0.0;
+
+			final TreeHashValueEx treeHash = (TreeHashValueEx) adapter.getTreeHash();
+
+			final int size = treeHash.size;
+			final int height = treeHash.height;
+
+			if (size < 2 && height < 2) return 0.0;
+
+			ElementIndexAdapterEx cAdapter = (ElementIndexAdapterEx) ElementIndexAdapter.getAdapter(cand);
+			
+			if (cAdapter != null) {
+				final TreeHashValueEx childHash = (TreeHashValueEx) cAdapter.getTreeHash();
+				if (size == childHash.size && height == childHash.height) {
+					final double sim = treeHash.computeSubtreeSimilarity(childHash);
+					if (sim > TREE_SIM_THREASHOLD) {
+						return sim;
+					}
+				}
+			} 
+			
+			return 0.0;
 		}
 	}
 
@@ -135,33 +170,6 @@ public class TopDownProximityEObjectMatcherOpt extends TopDownProximityEObjectMa
 				else return 1;
 			}
 		}
-	}
-
-	protected double computePartialSimilarity(EObject from, EObject cand) {
-		ElementIndexAdapterWithStructuralChecksum adapter = ElementIndexAdapter.getAdapter(from);
-		if (adapter == null) return 0.0;
-		if (cand.eClass() != from.eClass()) return 0.0;
-
-		final long subtreeKey = adapter.getTreeStructuralChecksum();
-
-		final int size = adapter.size;
-		final int height = adapter.height;
-
-		if (size < 2 && height < 2) return 0.0;
-
-		ElementIndexAdapterWithStructuralChecksum cAdapter = ElementIndexAdapter.getAdapter(cand);
-		
-		if (cAdapter != null) {
-			final long ctreeKey = cAdapter.getTreeStructuralChecksum();
-			if (size == cAdapter.size && height == cAdapter.height && ctreeKey == subtreeKey) {
-				final double sim = adapter.treeSimHash.similarity(cAdapter.treeSimHash);
-				if (sim > 0.85) {
-					return sim;
-				}
-			}
-		} 
-		
-		return 0.0;
 	}
 
 	private void coarseGainedStructuralMatches(Comparison comparison, Map<EObject, ChangeTrackingMatch> currentMatches, 
@@ -369,5 +377,183 @@ public class TopDownProximityEObjectMatcherOpt extends TopDownProximityEObjectMa
 			// 	currentMatches.put(cm.from, new ChangeTrackingMatch(cMatch, passedObjectSide));
 			// }
 		});
+	}
+
+
+	protected void createNewSubtreeSimMatches(Comparison comparison, Match match,
+			Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
+		if (roots.origin.isEmpty() && match.getOrigin() == MatchUtil.PSEUDO_MATCHED_OBJECT) {
+			match.setOrigin(null); // finalize this match
+		}
+
+		((BasicEList<Match>) comparison.getMatches()).addUnique(match);
+
+		// if match is a full match, remove objects
+		if (MatchUtil.isFullMatch(match)) {
+			index.remove(match.getLeft(), Side.LEFT);
+			index.remove(match.getRight(), Side.RIGHT);
+			if (match.getOrigin() != null) {
+				index.remove(match.getOrigin(), Side.ORIGIN);
+			}
+		}
+
+		List<EObject> lefts = getChildren(match.getLeft());
+		List<EObject> rights = getChildren(match.getRight());
+		List<EObject> origins = getChildren(match.getOrigin());
+		
+		Map<EObject, EObject> matchesLR = createSimMatches(lefts, rights);
+		Map<EObject, EObject> matchesLO = createSimMatches(lefts, origins);
+		
+		for(EObject l : lefts) {
+			EObject r = matchesLR.get(l);
+			EObject o = matchesLO.get(l);
+			
+			if(r==null && o==null) continue;
+			
+			Match childMatch = MatchUtil.createMatch();
+			
+			childMatch.setLeft(l);
+			childMatch.setRight(r == null ? MatchUtil.PSEUDO_MATCHED_OBJECT : r);
+			childMatch.setOrigin(o == null ? MatchUtil.PSEUDO_MATCHED_OBJECT : o);
+			
+			createNewSubtreeSimMatches(comparison, childMatch, roots);
+		}
+	}
+	
+	protected Map<EObject, EObject> createSimMatches(List<EObject> alist, List<EObject> blist) {
+		if(alist.isEmpty() || blist.isEmpty()) return Collections.emptyMap();
+		else {
+			alist = getCopy(alist);
+			blist = getCopy(blist);
+			
+			Multimap<Long, EObject> checksumMap = LinkedHashMultimap.create();
+			blist.forEach(e->{
+				ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(e);
+				if(adapter!=null)
+					checksumMap.put(adapter.getTreeHash().subtreeChecksum, e);
+			});
+			
+			Map<EObject, EObject> matches = new HashMap<EObject, EObject>();
+			
+			Iterator<EObject> aItr = alist.iterator();
+			while(aItr.hasNext()) {
+				EObject e = aItr.next();
+				ElementIndexAdapter adapter = ElementIndexAdapter.getAdapter(e);
+				if(adapter != null) {
+					long checksum = adapter.getTreeHash().subtreeChecksum;
+					Collection<EObject> cand = checksumMap.get(checksum);
+					if(cand==null || cand.isEmpty()) {
+						// NO Match
+					} else {
+						Iterator<EObject> candItr = cand.iterator();
+						
+						while(candItr.hasNext()) {
+							EObject match = candItr.next();
+							if(match.eClass() == e.eClass()) {							
+								aItr.remove();
+								candItr.remove();
+								matches.put(e, match);
+								break;
+							}
+						}
+						
+					}
+				}
+			}
+			
+			return matches;
+		}
+	}
+	
+	
+	protected List<EObject> getCopy(List<EObject> list) {
+		if(list.isEmpty()) return list;
+		else return new ArrayList<>(list);
+	}
+	protected List<EObject> getUnmatchedChildren(Comparison comparison, List<EObject> children, Side sideToFill) {
+		if(children.isEmpty()) return Collections.emptyList();
+		else {
+			return children.stream().filter(e->{
+				Match m = comparison.getMatch(e);
+				return !(MatchUtil.isMatched(m, sideToFill));
+			}).toList();
+		}
+	}
+	
+	protected void fillSubtreeSimMatches(Comparison comparison, Match match, Side sideToFill,
+			Triple<Collection<EObject>, Collection<EObject>, Collection<EObject>> roots) {
+
+		if (MatchUtil.isFullMatch(match)) {
+			index.remove(match.getLeft(), Side.LEFT);
+			index.remove(match.getRight(), Side.RIGHT);
+			if (match.getOrigin() != null) {
+				index.remove(match.getOrigin(), Side.ORIGIN);
+			}
+		}
+
+		List<EObject> lefts = getUnmatchedChildren(match.getLeft(), comparison, sideToFill);
+		List<EObject> rights = getUnmatchedChildren(match.getRight(), comparison, sideToFill);
+		List<EObject> origins = getUnmatchedChildren(match.getOrigin(), comparison, sideToFill);
+
+		List<EObject> colA = null;
+		List<EObject> colB = null;
+		List<EObject> colToFill = null;
+
+		switch (sideToFill) {
+		case LEFT:
+			colA = rights;
+			colB = origins;
+			colToFill = lefts;
+			break;
+		case RIGHT:
+			colA = lefts;
+			colB = origins;
+			colToFill = rights;
+			break;
+		case ORIGIN:
+			colA = lefts;
+			colB = rights;
+			colToFill = origins;
+			break;
+		}
+		
+		Map<EObject, EObject> matchesLR = createSimMatches(colToFill, colA);
+		Map<EObject, EObject> matchesLO = createSimMatches(colToFill, colB);
+		
+		for(EObject e : colToFill) {
+			EObject m = matchesLR.get(e);
+			if(m!=null && e.eClass() == m.eClass()) {
+				Match childMatch = comparison.getMatch(m);
+				if (childMatch != null) {
+					if (MatchUtil.tryFillMatched(childMatch, e, sideToFill)) {
+						fillSubtreeSimMatches(comparison, childMatch, sideToFill, roots);
+						continue;
+					} else {
+						System.err.println(childMatch);
+					}
+				} else {
+					System.err.println("null child match [A]!");
+				}
+			} else {
+				m = matchesLO.get(e);
+				if(m!=null && e.eClass() == m.eClass()) {
+					Match childMatch = comparison.getMatch(m);
+					if (childMatch != null) {
+						if (MatchUtil.tryFillMatched(childMatch, e, sideToFill)) {
+							fillSubtreeSimMatches(comparison, childMatch, sideToFill, roots);
+							continue;
+						} else {
+							System.err.println(childMatch);
+						}
+					} else {
+						System.err.println("null child match [B]!");
+					}
+				}
+			}
+		}
+	}
+	
+	private List<EObject> getUnmatchedChildren(EObject obj, Comparison c, Side side) {
+		return getChildren(obj).stream().filter(e->!MatchUtil.hasMatchFor(e, c, side)).toList();
 	}
 }
